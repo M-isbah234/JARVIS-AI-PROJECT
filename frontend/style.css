@@ -813,6 +813,7 @@ body {
   align-items: center;
   justify-content: center;
   z-index: 10;
+  cursor: pointer;
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -987,6 +988,24 @@ body {
 .splash-screen.speaking .hud-core-title {
   fill: #ffffff;
   filter: drop-shadow(0 0 15px rgba(0, 229, 255, 1)) drop-shadow(0 0 30px rgba(0, 229, 255, 0.8));
+}
+
+/* When Listening to User Speech */
+.splash-screen.listening .hud-core-status {
+  fill: #00e5ff;
+  font-weight: 700;
+  filter: drop-shadow(0 0 6px rgba(0, 229, 255, 0.9));
+  animation: pulseListeningBeacon 1.2s ease-in-out infinite alternate;
+}
+
+.splash-screen.listening .splash-voice-badge .badge-dot {
+  background: #00ff88;
+  box-shadow: 0 0 10px #00ff88;
+}
+
+@keyframes pulseListeningBeacon {
+  from { opacity: 0.6; }
+  to { opacity: 1; }
 }
 
 /* Splash Footer & Call to Action */

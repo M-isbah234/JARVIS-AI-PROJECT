@@ -60,7 +60,7 @@ function initWebSocket() {
           updateHardwareUI(msg.data);
         } else if (msg.type === 'chat_message') {
           appendChatMessage('assistant', msg.reply);
-          speakResponse(msg.reply);
+          speakResponse(msg.reply, isVoiceListening);
         }
       } catch (e) {
         console.error('[WS Parse Error]:', e);
@@ -350,6 +350,8 @@ function setSpeakingVisualState(active) {
   }
 }
 
+let isRecognizing = false;
+
 function speakResponse(text, force = false) {
   if ((!isVoiceListening && !force) || !window.speechSynthesis) return;
   const now = Date.now();
@@ -375,9 +377,34 @@ function speakResponse(text, force = false) {
     utterance.pitch = 0.95;
 
     // Pulse and dissolve rings into 3D neural web while J.A.R.V.I.S. speaks
-    utterance.onstart = () => setSpeakingVisualState(true);
-    utterance.onend = () => setSpeakingVisualState(false);
-    utterance.onerror = () => setSpeakingVisualState(false);
+    utterance.onstart = () => {
+      // Temporarily halt recognizer so J.A.R.V.I.S. doesn't capture his own audio output
+      if (browserRecognizer && isRecognizing) {
+        try { browserRecognizer.stop(); } catch (e) {}
+      }
+      const splash = document.getElementById('splashScreen');
+      if (splash) splash.classList.remove('listening');
+      setSpeakingVisualState(true);
+    };
+
+    const handleSpeechFinish = () => {
+      setSpeakingVisualState(false);
+      const splash = document.getElementById('splashScreen');
+      const splashStatus = document.getElementById('splashStatusText');
+      if (isVoiceListening) {
+        if (splash) splash.classList.add('listening');
+        if (splashStatus) splashStatus.textContent = 'LISTENING... // SPEAK NOW';
+        if (browserRecognizer && !isRecognizing) {
+          try { browserRecognizer.start(); } catch (e) {}
+        }
+      } else {
+        if (splash) splash.classList.remove('listening');
+        if (splashStatus) splashStatus.textContent = 'NEURAL CORE ONLINE';
+      }
+    };
+
+    utterance.onend = handleSpeechFinish;
+    utterance.onerror = handleSpeechFinish;
 
     window.speechSynthesis.speak(utterance);
   } catch (e) {
@@ -403,12 +430,26 @@ if (SpeechRecognition) {
   browserRecognizer.interimResults = false;
   browserRecognizer.lang = 'en-US';
 
+  browserRecognizer.onstart = () => {
+    isRecognizing = true;
+    const splash = document.getElementById('splashScreen');
+    const splashStatus = document.getElementById('splashStatusText');
+    if (splash) splash.classList.add('listening');
+    if (splashStatus && (!window.speechSynthesis || !window.speechSynthesis.speaking)) {
+      splashStatus.textContent = 'LISTENING... // SPEAK NOW';
+    }
+  };
+
   browserRecognizer.onresult = (event) => {
     const lastResult = event.results[event.results.length - 1];
     if (lastResult.isFinal) {
       const transcript = lastResult[0].transcript.trim();
       if (transcript) {
         console.log('[Web Speech Captured]:', transcript);
+        const splashStatus = document.getElementById('splashStatusText');
+        if (splashStatus) {
+          splashStatus.textContent = `ANALYZING // "${transcript.slice(0, 22).toUpperCase()}"`;
+        }
         sendUserMessage(transcript);
       }
     }
@@ -418,10 +459,13 @@ if (SpeechRecognition) {
     if (e.error !== 'no-speech') {
       console.warn('[Web Speech Error]:', e.error);
     }
+    isRecognizing = false;
   };
 
   browserRecognizer.onend = () => {
-    if (isVoiceListening) {
+    isRecognizing = false;
+    // Automatically re-listen if voice mode is engaged and not currently outputting audio
+    if (isVoiceListening && (!window.speechSynthesis || !window.speechSynthesis.speaking)) {
       try { browserRecognizer.start(); } catch (e) {}
     }
   };
@@ -443,11 +487,16 @@ async function sendUserMessage(text) {
     const data = await res.json();
     // Only append if WebSocket is offline (active WS broadcast handles real-time append)
     if (!ws || ws.readyState !== WebSocket.OPEN) {
-      appendChatMessage('assistant', data.response);
-      speakResponse(data.response);
+      if (data && data.response) {
+        appendChatMessage('assistant', data.response);
+        speakResponse(data.response, isVoiceListening);
+      }
     }
   } catch (err) {
     appendChatMessage('assistant', 'Telemetry connection failure. Operating offline, Sir.');
+    if (isVoiceListening) {
+      speakResponse('Telemetry connection failure. Operating offline, Sir.', true);
+    }
   }
 }
 
@@ -468,44 +517,66 @@ document.querySelectorAll('.quick-chips .chip').forEach(chip => {
   });
 });
 
-// 7. Voice Toggle Button (Hybrid Browser Web Speech + Desktop Fallback)
-btnVoiceToggle.addEventListener('click', async () => {
-  isVoiceListening = !isVoiceListening;
-  btnVoiceToggle.classList.toggle('active', isVoiceListening);
-  
+// 7. Master Voice Listener & Speaker State Controller
+async function setVoiceListeningState(active, speakGreeting = false) {
+  isVoiceListening = active;
+  const splash = document.getElementById('splashScreen');
+  const splashStatus = document.getElementById('splashStatusText');
+  const splashVoiceStatus = document.getElementById('splashVoiceStatus');
+
+  if (btnVoiceToggle) btnVoiceToggle.classList.toggle('active', isVoiceListening);
+  if (voiceBtnText) voiceBtnText.textContent = isVoiceListening ? 'VOICE: ACTIVE' : 'VOICE: STANDBY';
+
   if (isVoiceListening) {
-    voiceBtnText.textContent = 'VOICE: ACTIVE';
-    
-    // 1. Try browser Web Speech first
-    if (browserRecognizer) {
+    if (splash) splash.classList.add('listening');
+    if (splashVoiceStatus) splashVoiceStatus.textContent = 'MICROPHONE ACTIVE // LISTENING FOR COMMAND';
+
+    // Proactively request browser microphone permission
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       try {
-        browserRecognizer.start();
-        appendChatMessage('assistant', 'Microphone audio feed initialized. Speak your commands, Sir.');
-        speakResponse('Microphone audio feed initialized. Speak your commands, Sir.');
+        await navigator.mediaDevices.getUserMedia({ audio: true });
       } catch (err) {
-        console.debug('Browser speech start:', err);
+        console.warn('Microphone permission request:', err);
       }
     }
 
-    // 2. Also notify backend voice service if running locally
+    // Start Web Speech Recognition
+    if (browserRecognizer && !isRecognizing) {
+      try { browserRecognizer.start(); } catch (e) {}
+    }
+
+    // Notify backend voice service if running locally
     try {
-      await fetch('/api/voice/start', { method: 'POST' });
-    } catch (e) {
-      // Serverless or background
+      fetch('/api/voice/start', { method: 'POST' });
+    } catch (e) {}
+
+    if (speakGreeting) {
+      if (splashStatus) splashStatus.textContent = 'TRANSMITTING // INITIALIZING';
+      appendChatMessage('assistant', 'Microphone audio feed initialized. Standing by for your commands, Sir.');
+      speakResponse('I am listening, Sir. How may I assist you?', true);
+    } else {
+      if (splashStatus) splashStatus.textContent = 'LISTENING... // SPEAK NOW';
     }
   } else {
-    voiceBtnText.textContent = 'VOICE: STANDBY';
-    if (browserRecognizer) {
+    if (splash) splash.classList.remove('listening');
+    if (splashStatus) splashStatus.textContent = 'NEURAL CORE ONLINE';
+    if (splashVoiceStatus) splashVoiceStatus.textContent = 'VOICE LISTENERS STANDING BY // CLICK LOGO TO SPEAK';
+
+    if (browserRecognizer && isRecognizing) {
       try { browserRecognizer.stop(); } catch (e) {}
     }
     if (window.speechSynthesis) {
       window.speechSynthesis.cancel();
     }
     try {
-      await fetch('/api/voice/stop', { method: 'POST' });
+      fetch('/api/voice/stop', { method: 'POST' });
     } catch (e) {}
     appendChatMessage('assistant', 'Voice listeners disengaged.');
   }
+}
+
+btnVoiceToggle.addEventListener('click', () => {
+  setVoiceListeningState(!isVoiceListening, !isVoiceListening);
 });
 
 // ==============================================================================
@@ -813,17 +884,19 @@ class NeuralWebVisualizer {
 function initSplashTransitions() {
   const splashScreen = document.getElementById('splashScreen');
   const btnReturnSplash = document.getElementById('btnReturnSplash');
-  const coreTrigger = document.querySelector('.hud-innermost-core');
+  const logoWrapper = document.querySelector('.splash-centerpiece-wrapper');
 
-  if (coreTrigger) {
-    coreTrigger.addEventListener('click', (e) => {
-      e.stopPropagation(); // Stay on splash to demo the voice visualizer effect
-      speakResponse('Good day, Sir. J.A.R.V.I.S. neural subroutines online. Standing by to manage your smart environment.', true);
+  if (logoWrapper) {
+    logoWrapper.addEventListener('click', (e) => {
+      e.stopPropagation(); // Stay on splash screen to converse with J.A.R.V.I.S.
+      // Engage voice hearing mode: open mic, speak greeting, and await user command
+      setVoiceListeningState(true, true);
     });
   }
 
   if (splashScreen) {
     splashScreen.addEventListener('click', () => {
+      // Clicking outside the logo transitions to the tactical deck
       splashScreen.classList.add('hidden');
     });
   }
