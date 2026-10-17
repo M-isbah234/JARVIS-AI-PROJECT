@@ -419,26 +419,6 @@ function isStopCommand(text) {
   return enMatch || urMatch;
 }
 
-// Voice OFF Voice Command Detector ("voice off", "go to sleep", "awaz band karo", "so jao")
-function isVoiceOffCommand(text) {
-  if (!text) return false;
-  const clean = text.toLowerCase().trim();
-  const enMatch = /\b(voice\s*off|turn\s*off\s*voice|stop\s*listening|go\s*to\s*sleep|sleep\s*mode|disable\s*voice|standby\s*voice|voice\s*standby|sleep)\b/i.test(clean);
-  const urMatch = /\b(awaz\s*band(?:\s*karo)?|so\s*jao|sunna\s*band(?:\s*karo)?|mic\s*band(?:\s*karo)?|khamosh\s*ho\s*jao)\b/i.test(clean) ||
-                  (/[\u0600-\u06FF]/.test(clean) && /(آواز\s*بند|سو\s*جاؤ|سننا\s*بند|مائیک\s*بند|خاموش|بند\s*ہو\s*جاؤ)/.test(clean));
-  return enMatch || urMatch;
-}
-
-// Voice ON / Wake-Word Voice Command Detector ("hey jarvis", "wake up", "voice on", "suno jarvis", "utho jarvis")
-function isVoiceOnCommand(text) {
-  if (!text) return false;
-  const clean = text.toLowerCase().trim();
-  const enMatch = /\b(voice\s*on|turn\s*on\s*voice|hey\s*jarvis|wake\s*up|jarvis|start\s*listening|listen\s*to\s*me)\b/i.test(clean);
-  const urMatch = /\b(utho\s*jarvis|suno\s*jarvis|awaz\s*on(?:\s*karo)?|awaz\s*kholo|sun\s*rahe\s*ho)\b/i.test(clean) ||
-                  (/[\u0600-\u06FF]/.test(clean) && /(جاگو|اٹھو\s*جاروس|سنو\s*جاروس|آواز\s*آن|سن\s*رہے\s*ہو)/.test(clean));
-  return enMatch || urMatch;
-}
-
 function stopSpeakingImmediately() {
   if (window.speechSynthesis) {
     window.speechSynthesis.cancel();
@@ -492,7 +472,7 @@ if (window.speechSynthesis) {
   };
 }
 
-// Browser Web Speech Recognition (Microphone Input with Real-Time Interruption & Passive Wake Listener)
+// Browser Web Speech Recognition (Microphone Input with Real-Time Interruption)
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let browserRecognizer = null;
 
@@ -534,41 +514,8 @@ if (SpeechRecognition) {
         continue;
       }
 
-      // PRIORITY 2: WAKE WORD DETECTION (Turn Voice Recognition ON via Speech)
+      // Only process commands when voice recognition is active
       if (!isVoiceListening) {
-        if (isVoiceOnCommand(transcript)) {
-          if (res.isFinal) {
-            console.log('[Voice ON Wake Detected]:', transcript);
-            appendChatMessage('user', transcript);
-            setVoiceListeningState(true, true);
-          }
-        }
-        return;
-      }
-
-      // PRIORITY 3: TURN VOICE RECOGNITION OFF VIA SPEECH
-      if (isVoiceOffCommand(transcript)) {
-        if (res.isFinal) {
-          console.log('[Voice OFF Detected]:', transcript);
-          appendChatMessage('user', transcript);
-          setVoiceListeningState(false, true);
-        }
-        return;
-      }
-
-      // PRIORITY 4: LANGUAGE TOGGLE VIA SPEECH
-      if (/\b(switch\s*to\s*urdu|urdu\s*mode|urdu\s*mein\s*baat|اردو)/i.test(transcript)) {
-        if (res.isFinal) {
-          appendChatMessage('user', transcript);
-          setSpeechLanguage('ur-PK', true);
-        }
-        return;
-      }
-      if (/\b(switch\s*to\s*english|english\s*mode|انگریزی)/i.test(transcript)) {
-        if (res.isFinal) {
-          appendChatMessage('user', transcript);
-          setSpeechLanguage('en-US', true);
-        }
         return;
       }
 
@@ -589,15 +536,9 @@ if (SpeechRecognition) {
 
   browserRecognizer.onend = () => {
     isRecognizing = false;
-    // Keep continuous background listening armed (Active or Passive Wake Word Standby)
-    if (!window.speechSynthesis || !window.speechSynthesis.speaking) {
-      setTimeout(() => {
-        try {
-          if (!isRecognizing && browserRecognizer) {
-            browserRecognizer.start();
-          }
-        } catch (e) {}
-      }, 350);
+    // Automatically re-listen only if voice mode is engaged and not currently outputting audio
+    if (isVoiceListening && (!window.speechSynthesis || !window.speechSynthesis.speaking)) {
+      try { browserRecognizer.start(); } catch (e) {}
     }
   };
 }
@@ -774,42 +715,31 @@ async function setVoiceListeningState(active, speakGreeting = false) {
 
     if (speakGreeting) {
       if (splashStatus) splashStatus.textContent = 'TRANSMITTING // INITIALIZING';
-      const greeting = currentSpeechLang === 'ur-PK' ? 
-        'جی سر، میں سن رہا ہوں۔ بتائیے کیا حکم ہے؟' : 
-        'I am listening, Sir. Standing by for your commands.';
-      appendChatMessage('assistant', greeting);
-      speakResponse(greeting, true);
+      appendChatMessage('assistant', 'Microphone audio feed initialized. Standing by for your commands, Sir.');
+      speakResponse('I am listening, Sir. How may I assist you?', true);
     } else {
       if (splashStatus) splashStatus.textContent = 'LISTENING... // SPEAK NOW';
     }
   } else {
     if (splash) splash.classList.remove('listening');
     if (splashStatus) splashStatus.textContent = 'NEURAL CORE ONLINE';
-    if (splashVoiceStatus) splashVoiceStatus.textContent = 'VOICE STANDBY // SAY "HEY JARVIS" OR "SUNO JARVIS"';
+    if (splashVoiceStatus) splashVoiceStatus.textContent = 'VOICE LISTENERS STANDING BY // CLICK LOGO TO SPEAK';
 
+    if (browserRecognizer && isRecognizing) {
+      try { browserRecognizer.stop(); } catch (e) {}
+    }
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
     try {
       fetch('/api/voice/stop', { method: 'POST' });
     } catch (e) {}
-
-    // Ensure speech recognizer is armed in low-overhead passive wake standby mode
-    if (browserRecognizer && !isRecognizing) {
-      try { browserRecognizer.start(); } catch (e) {}
-    }
-
-    if (speakGreeting) {
-      const farewell = currentSpeechLang === 'ur-PK' ? 
-        'وائس ریکگنیشن اسٹینڈ بائی پر ہے۔ جگانے کے لیے کہیے سنو جاروس۔' : 
-        'Voice listeners disengaged. Standing by for wake word, Sir.';
-      appendChatMessage('assistant', farewell);
-      speakResponse(farewell, true);
-    } else {
-      appendChatMessage('assistant', 'Voice listeners disengaged. Standing by for wake word.');
-    }
+    appendChatMessage('assistant', 'Voice listeners disengaged.');
   }
 }
 
 btnVoiceToggle.addEventListener('click', () => {
-  setVoiceListeningState(!isVoiceListening, true);
+  setVoiceListeningState(!isVoiceListening, !isVoiceListening);
 });
 
 // ==============================================================================

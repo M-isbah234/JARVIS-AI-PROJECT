@@ -63,8 +63,6 @@ J.A.R.V.I.S. understands natural phrasing across both **English** and **Urdu (in
 
 | Intent | English Examples | Urdu / Roman Urdu Examples | Action |
 | :--- | :--- | :--- | :--- |
-| **Voice ON (Wake Word)** | *"Hey Jarvis"*, *"Wake up"*, *"Voice on"* | *"Suno Jarvis"*, *"Utho Jarvis"*, *"Awaz on karo"*, *"جاگو"* | Wakes J.A.R.V.I.S. from standby and activates continuous microphone listening |
-| **Voice OFF (Standby)** | *"Voice off"*, *"Go to sleep"*, *"Stop listening"* | *"Awaz band karo"*, *"So jao"*, *"Sunna band karo"*, *"آواز بند کرو"* | Disengages voice recognition into low-overhead passive wake-word standby |
 | **Immediate Speech Stop** | *"Stop"*, *"Quiet"*, *"Shut up"*, *"Silence"* | *"Ruko"*, *"Chup"*, *"Ruk jao"*, *"Bas karo"*, *"روکو"* | Instantly terminates active speech output mid-sentence |
 | **Tactical Deck Transition** | *"Let's start"*, *"Let's begin"* | *"Shuru karen"*, *"Haan bhi"*, *"Chalo shuru"*, *"شروع کریں"* | Transitions smoothly from Arc Reactor logo to Chat & Hardware Deck |
 | **Return to Arc Reactor** | *"Standdown"*, *"Stand down"*, *"Return to arc"* | *"Wapas jao"*, *"Piche hato"*, *"واپس جاؤ"* | Returns interface to the pulsing Arc Reactor neural centerpiece |
