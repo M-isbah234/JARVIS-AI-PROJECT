@@ -136,11 +136,24 @@
 
     <!-- Main Dual-Column Tactical Layout -->
     <main class="hud-main">
+      <!-- Left Dock Option Pill / Button (Say "Hardware Management" or "Lights" or Click) -->
+      <button id="btnToggleHardware" class="hardware-dock-tab" title="Click or say 'Hardware Management' or 'Lights' to open">
+        <span class="dock-tab-icon">⚡</span>
+        <div class="dock-tab-text-group">
+          <span class="dock-tab-title">HARDWARE MANAGEMENT</span>
+          <span class="dock-tab-sub">LIGHTS &amp; SMART PLUG</span>
+        </div>
+        <span class="dock-tab-arrow">▶</span>
+      </button>
+
       <!-- LEFT COLUMN: Wireless Hardware Terminal -->
-      <section class="card hardware-card">
+      <section class="card hardware-card collapsed" id="hardwarePanel">
         <div class="card-header">
           <div class="header-tag"><span class="sq"></span>WIRELESS PLUG &amp; BULB MATRIX</div>
-          <button id="btnScanNet" class="btn-ghost" title="Scan local subnet for Kasa/Tapo hardware">⟳ SCAN WI-FI</button>
+          <div class="header-actions">
+            <button id="btnScanNet" class="btn-ghost" title="Scan local subnet for Kasa/Tapo hardware">⟳ SCAN WI-FI</button>
+            <button id="btnCloseHardware" class="btn-ghost btn-dock-action" title="Dock Hardware Panel">◀ DOCK</button>
+          </div>
         </div>
 
         <!-- Top Row: Relay Orb + Smart Bulb Ambience side-by-side -->

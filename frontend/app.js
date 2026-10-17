@@ -568,7 +568,52 @@ if (SpeechRecognition) {
   };
 }
 
-// Voice Command Router (Start Deck, Stand Down, or Bilingual AI Core)
+// Hardware Panel Drawer State Controller (Voice & UI Activated)
+function setHardwarePanelState(open, announce = false) {
+  const panel = document.getElementById('hardwarePanel');
+  const dockBtn = document.getElementById('btnToggleHardware');
+  if (!panel) return;
+
+  if (open) {
+    panel.classList.remove('collapsed');
+    if (dockBtn) dockBtn.style.display = 'none';
+  } else {
+    panel.classList.add('collapsed');
+    if (dockBtn) dockBtn.style.display = 'flex';
+  }
+
+  if (announce) {
+    const isUrdu = currentSpeechLang === 'ur-PK';
+    const text = open ? 
+      (isUrdu ? 'ہارڈویئر اور لائٹنگ پینل کھول دیا گیا ہے، سر۔' : 'Hardware management and lighting matrix deployed, Sir.') :
+      (isUrdu ? 'ہارڈویئر پینل بند کر دیا گیا ہے، سر۔' : 'Hardware panel docked, Sir.');
+    appendChatMessage('assistant', text);
+    speakResponse(text, true);
+  }
+}
+
+function isHardwareOpenCommand(text) {
+  const t = text.trim();
+  // Avoid matching device power toggling commands like "turn on lights" or "switch plug"
+  if (/\b(turn|switch|power\s*on|power\s*off)\b/i.test(t)) {
+    return false;
+  }
+  const enRegex = /\b(hardware\s*management|open\s*hardware|show\s*hardware|hardware\s*panel|lights\s*panel|smart\s*lights|lights\s*management|open\s*lights|show\s*lights|hardware\s*kholo|lights\s*kholo|hardware\s*dikhao|lights\s*dikhao)\b/i;
+  const exactRegex = /^(?:hardware|lights|smart\s*plug|smart\s*lights|hardware\s*management)$/i;
+  const urduRegex = /[\u0600-\u06FF]/.test(t) && /(ہارڈویئر\s*(?:مینجمنٹ|پینل|کھولو|دکھاؤ)?|لائٹس\s*(?:پینل|کھولو|دکھاؤ)|بجلی\s*پینل)/.test(t);
+
+  return enRegex.test(t) || exactRegex.test(t) || urduRegex;
+}
+
+function isHardwareCloseCommand(text) {
+  const t = text.trim();
+  const enRegex = /\b(close\s*hardware|hide\s*hardware|dock\s*hardware|close\s*lights|hide\s*lights|dock\s*lights|hardware\s*band(?:\s*karo)?|lights\s*band(?:\s*karo)?|band\s*karo\s*hardware)\b/i;
+  const urduRegex = /[\u0600-\u06FF]/.test(t) && /(ہارڈویئر\s*بند|لائٹس\s*بند|پینل\s*بند|ہارڈویئر\s*چھپاؤ)/.test(t);
+
+  return enRegex.test(t) || urduRegex;
+}
+
+// Voice Command Router (Start Deck, Stand Down, Hardware Drawer, or Bilingual AI Core)
 function handleVoiceCommandOrChat(text) {
   const clean = text.trim();
   if (!clean) return;
@@ -576,7 +621,28 @@ function handleVoiceCommandOrChat(text) {
   const splashScreen = document.getElementById('splashScreen');
   const splashStatus = document.getElementById('splashStatusText');
 
-  // 1. Transition to Chat & Hardware Deck:
+  // 1. Hardware Drawer Close Command:
+  if (isHardwareCloseCommand(clean)) {
+    appendChatMessage('user', clean);
+    setHardwarePanelState(false, true);
+    return;
+  }
+
+  // 2. Hardware Drawer Open Command ("hardware management", "lights", etc.):
+  if (isHardwareOpenCommand(clean)) {
+    // If on splash screen, transition to tactical deck too!
+    if (splashScreen) {
+      splashScreen.classList.add('hidden');
+    }
+    if (splashStatus) {
+      splashStatus.textContent = 'HARDWARE MATRIX DEPLOYED';
+    }
+    appendChatMessage('user', clean);
+    setHardwarePanelState(true, true);
+    return;
+  }
+
+  // 3. Transition to Chat & Hardware Deck:
   // "when i say 'Lets start', 'Lets begin', 'Shuru karen', 'Haan bhi', it should transition to the chat and hardware side"
   const isStartCmd = (
     /\b(let'?s\s*start|let'?s\s*begin|shuru\s*kar(?:en|ein|o|iye)?|haan?\s*(?:bhi|bhai|jee|ji)?|han\s*bhi|chalo\s*shuru|sure\s*(?:karen|current|can)|sugar\s*can|shoe\s*can|on\s*the|hun\s*bee|harm\s*be)\b/i.test(clean) ||
@@ -597,7 +663,7 @@ function handleVoiceCommandOrChat(text) {
     return;
   }
 
-  // 2. Return back to Arc Reactor Centerpiece:
+  // 4. Return back to Arc Reactor Centerpiece:
   // "when i say 'Standown' it should return back to arc reactor"
   const isStandDownCmd = (
     /\b(stand\s*down|standown|stand-down|return\s*(?:to\s*)?arc|arc\s*core|wapas\s*jao|piche\s*hato)\b/i.test(clean) ||
@@ -618,7 +684,7 @@ function handleVoiceCommandOrChat(text) {
     return;
   }
 
-  // 3. Regular Command or Dialogue -> Chat Pipeline
+  // 5. Regular Command or Dialogue -> Chat Pipeline
   if (splashStatus) {
     splashStatus.textContent = `ANALYZING // "${clean.slice(0, 22).toUpperCase()}"`;
   }
@@ -631,7 +697,7 @@ async function sendUserMessage(text) {
 
   chatInput.value = '';
 
-  // Check typed commands for start, standdown, and stop as well
+  // Check typed commands for start, standdown, hardware, and stop as well
   const splashScreen = document.getElementById('splashScreen');
   if (isStopCommand(msg)) {
     stopSpeakingImmediately();
@@ -639,6 +705,20 @@ async function sendUserMessage(text) {
     appendChatMessage('assistant', 'Speech output terminated, Sir.');
     return;
   }
+
+  if (isHardwareCloseCommand(msg)) {
+    appendChatMessage('user', msg);
+    setHardwarePanelState(false, true);
+    return;
+  }
+
+  if (isHardwareOpenCommand(msg)) {
+    if (splashScreen) splashScreen.classList.add('hidden');
+    appendChatMessage('user', msg);
+    setHardwarePanelState(true, true);
+    return;
+  }
+
   const isStartCmd = (
     /\b(let'?s\s*start|let'?s\s*begin|shuru\s*kar(?:en|ein|o|iye)?|haan?\s*(?:bhi|bhai|jee|ji)?|han\s*bhi|chalo\s*shuru)\b/i.test(msg) ||
     (/[\u0600-\u06FF]/.test(msg) && /(شروع\s*(?:کریں|کرو|کیجیے)?|ہاں\s*(?:بھائی|جی|بھی)|چلو)/.test(msg))
@@ -1099,6 +1179,24 @@ function initSplashTransitions() {
       e.stopPropagation();
       const nextLang = currentSpeechLang === 'ur-PK' ? 'en-US' : 'ur-PK';
       setSpeechLanguage(nextLang, true);
+    });
+  }
+
+  // Left Dock Option & Close Button Handlers
+  const btnToggleHardware = document.getElementById('btnToggleHardware');
+  const btnCloseHardware = document.getElementById('btnCloseHardware');
+
+  if (btnToggleHardware) {
+    btnToggleHardware.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setHardwarePanelState(true, false);
+    });
+  }
+
+  if (btnCloseHardware) {
+    btnCloseHardware.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setHardwarePanelState(false, false);
     });
   }
 }
