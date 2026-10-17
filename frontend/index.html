@@ -215,27 +215,39 @@
 
           <div class="section-title" style="margin-top: 6px;">LOCAL WI-FI SUBNET DISCOVERY</div>
           <div class="devices-list" id="devicesList">
-            <div class="device-empty">Click '⟳ SCAN WI-FI' to automatically locate all TP-Link devices on your network.</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- RIGHT COLUMN: J.A.R.V.I.S. Neural Chat Console -->
-      <section class="card chat-card">
-        <div class="card-header">
-          <div class="header-tag"><span class="sq"></span>J.A.R.V.I.S. // NEURAL DIALOGUE CORE</div>
-          <div class="ai-model-tag">GROQ LLAMA-3.3 // BILINGUAL EN/UR</div>
-        </div>
-
-        <!-- Chat Stream Log -->
-        <div class="chat-log" id="chatLog">
-          <div class="chat-msg assistant">
-            <div class="msg-author">J.A.R.V.I.S.</div>
-            <div class="msg-content">Good day, Sir. All wireless local subroutines are online. Standing by to manage your smart plug and answer your inquiries.</div>
+            <div class="device-empty">NO TP-LINK HARDWARE DETECTED ON LOCAL SUBNET. Ensure device is plugged into power and connected to 2.4GHz Wi-Fi.</div>
           </div>
         </div>
 
-        <!-- Quick Action Commands -->
+        <!-- Weather Forecast Widget (Matches UI Matrix) -->
+        <div class="weather-block">
+          <div class="section-title">WEATHER FORECAST</div>
+          <div class="weather-content-grid">
+            <div class="weather-hero">
+              <div class="weather-icon-svg">
+                <svg viewBox="0 0 64 64" width="42" height="42" fill="none" stroke="currentColor">
+                  <path d="M20 38h24a11 11 0 0 0 0-22 15 15 0 0 0-29 5 9.5 9.5 0 0 0 5 17z" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M22 45l-2 5M30 45l-2 5M38 45l-2 5" stroke="#4dd8ff" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div class="weather-temp-readout">
+                <div class="temp-big">24°</div>
+                <div class="temp-sub">48% / 23%</div>
+              </div>
+            </div>
+            <div class="weather-days-grid">
+              <div class="day-col"><div class="day-name">MON</div><div class="day-icon">🌧</div><div class="day-val">0.35 <span class="u">kWh</span></div></div>
+              <div class="day-col"><div class="day-name">TUE</div><div class="day-icon">🌧</div><div class="day-val">0.58 <span class="u">kWh</span></div></div>
+              <div class="day-col"><div class="day-name">WED</div><div class="day-icon">🌧</div><div class="day-val">0.35 <span class="u">kWh</span></div></div>
+              <div class="day-col"><div class="day-name">THU</div><div class="day-icon">🌧</div><div class="day-val">0.28 <span class="u">kWh</span></div></div>
+              <div class="day-col"><div class="day-name">WED</div><div class="day-icon">🌧</div><div class="day-val">0.65 <span class="u">kWh</span></div></div>
+              <div class="day-col"><div class="day-name">MOD</div><div class="day-icon">🌦</div><div class="day-val">2.58 <span class="u">%</span></div></div>
+              <div class="day-col"><div class="day-name">FRI-I</div><div class="day-icon">🌧</div><div class="day-val">1.55 <span class="u">kWh</span></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Action Commands (Bottom Strip) -->
         <div class="quick-chips">
           <button class="chip" data-cmd="turn on the plug">⚡ Turn On Plug</button>
           <button class="chip" data-cmd="turn off the plug">⏹ Turn Off Plug</button>
@@ -244,11 +256,26 @@
           <button class="chip" data-cmd="dim brightness to 40 percent">💡 Dim to 40%</button>
           <button class="chip" data-cmd="scan wi-fi">📡 Scan Subnet</button>
         </div>
+      </section>
+
+      <!-- RIGHT COLUMN: J.A.R.V.I.S. Neural Chat Console (Borderless with Proper Spacing) -->
+      <section class="card chat-card borderless-chat">
+        <div class="card-header borderless-header">
+          <div class="header-tag"><span class="sq"></span>NEURAL DIALOGUE CORE</div>
+        </div>
+
+        <!-- Chat Stream Log -->
+        <div class="chat-log" id="chatLog">
+          <div class="chat-msg assistant">
+            <div class="msg-author">J.A.R.V.I.S.</div>
+            <div class="msg-content">Certainly, Sir, Here's a quick rundown of what I can right now: - <b>Smart-plug / plug & bulb control</b> — turn on/off, adjust brightness, telemetry monitoring.</div>
+          </div>
+        </div>
 
         <!-- Interactive Chat Input -->
         <div class="chat-input-bar">
-          <input type="text" id="chatInput" placeholder="Speak or enter command (e.g. 'Turn on desk lamp', 'Batti jalao', 'Pair device at 192.168.1.50')..." autocomplete="off" />
-          <button id="btnSend" class="btn-primary">[TRANSMIT ⇧]</button>
+          <input type="text" id="chatInput" placeholder="Speak or enter command..." autocomplete="off" />
+          <button id="btnSend" class="btn-primary">[TRANSMIT ↵]</button>
         </div>
       </section>
     </main>

@@ -53,13 +53,16 @@ body {
 
 .hud-container {
   width: 98vw;
-  max-width: 1440px;
+  max-width: 1480px;
   height: 96vh;
   max-height: 96vh;
   display: flex;
   flex-direction: column;
   gap: 8px;
   overflow: hidden;
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
 }
 
 /* Header */
@@ -68,10 +71,12 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 8px 16px;
-  background: var(--bg-card);
-  border: var(--border-card);
+  background: rgba(3, 14, 26, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(77, 216, 255, 0.22);
   border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
   flex-shrink: 0;
 }
 
@@ -181,20 +186,22 @@ body {
 /* Main Layout */
 .hud-main {
   display: grid;
-  grid-template-columns: 1fr 1.15fr;
-  gap: 10px;
+  grid-template-columns: 1.08fr 1fr;
+  gap: 16px;
   flex: 1;
   min-height: 0;
   overflow: hidden;
 }
 
 .card {
-  background: var(--bg-card);
-  border: var(--border-card);
+  background: rgba(3, 13, 24, 0.74);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(77, 216, 255, 0.22);
   border-radius: 8px;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55), inset 0 0 20px rgba(0, 229, 255, 0.02);
   overflow: hidden;
 }
 
@@ -204,7 +211,7 @@ body {
   align-items: center;
   padding: 8px 14px;
   border-bottom: 1px solid rgba(77, 216, 255, 0.15);
-  background: rgba(6, 10, 16, 0.5);
+  background: rgba(4, 10, 18, 0.6);
   flex-shrink: 0;
 }
 
@@ -620,70 +627,98 @@ body {
   background: rgba(6, 10, 16, 0.4);
 }
 
-/* RIGHT COLUMN: Chat Console */
-.chat-card {
+/* Weather Forecast Widget */
+.weather-block {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  gap: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(77, 216, 255, 0.12);
+  flex-shrink: 0;
 }
 
-.chat-log {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  padding: 12px;
+.weather-content-grid {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.chat-msg {
-  max-width: 85%;
-  padding: 8px 12px;
+  align-items: center;
+  gap: 14px;
+  background: rgba(4, 10, 18, 0.55);
+  border: 1px solid rgba(77, 216, 255, 0.14);
   border-radius: 6px;
-  font-size: 12px;
-  line-height: 1.45;
-  animation: fadeIn 0.2s ease;
+  padding: 8px 12px;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+.weather-hero {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-right: 14px;
+  border-right: 1px solid rgba(77, 216, 255, 0.15);
 }
 
-.chat-msg.assistant {
-  align-self: flex-start;
-  background: rgba(14, 22, 35, 0.85);
-  border: 1px solid rgba(77, 216, 255, 0.25);
-  color: #edf5fc;
+.weather-icon-svg svg {
+  filter: drop-shadow(0 0 6px rgba(0, 229, 255, 0.6));
 }
 
-.chat-msg.user {
-  align-self: flex-end;
-  background: rgba(77, 216, 255, 0.18);
-  border: 1px solid var(--cyan);
+.weather-temp-readout .temp-big {
+  font-family: 'Orbitron', var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
   color: #fff;
+  line-height: 1;
 }
 
-.msg-author {
+.weather-temp-readout .temp-sub {
   font-family: var(--font-mono);
   font-size: 9px;
+  color: var(--text-dim);
+  margin-top: 3px;
+  letter-spacing: 0.05em;
+}
+
+.weather-days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  flex: 1;
+}
+
+.day-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--font-mono);
+}
+
+.day-name {
+  font-size: 8.5px;
+  color: var(--text-dim);
   font-weight: 700;
-  letter-spacing: 0.1em;
-  color: var(--cyan);
-  margin-bottom: 2px;
+  letter-spacing: 0.04em;
 }
 
-.chat-msg.user .msg-author {
-  color: var(--gold);
+.day-icon {
+  font-size: 13px;
 }
 
+.day-val {
+  font-size: 8px;
+  color: #9fe2ff;
+  white-space: nowrap;
+}
+
+.day-val .u {
+  font-size: 7px;
+  color: var(--text-dim);
+}
+
+/* Quick Action Chips */
 .quick-chips {
   display: flex;
   gap: 6px;
-  padding: 6px 12px;
-  background: rgba(6, 10, 16, 0.7);
-  border-top: 1px solid rgba(77, 216, 255, 0.12);
+  padding: 6px 0 2px 0;
+  background: transparent;
+  border-top: none;
   overflow-x: auto;
   flex-shrink: 0;
 }
@@ -694,7 +729,7 @@ body {
   color: var(--cyan);
   font-family: var(--font-mono);
   font-size: 9.5px;
-  padding: 4px 8px;
+  padding: 4px 10px;
   border-radius: 12px;
   white-space: nowrap;
   cursor: pointer;
@@ -704,33 +739,143 @@ body {
 .chip:hover {
   background: rgba(77, 216, 255, 0.22);
   border-color: var(--cyan);
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.35);
 }
 
-.chat-input-bar {
+/* RIGHT COLUMN: Chat Console - Borderless, Transparent & Generous Spacing */
+.chat-card.borderless-chat {
   display: flex;
-  gap: 8px;
-  padding: 8px 12px;
-  background: rgba(6, 10, 16, 0.95);
-  border-top: 1px solid rgba(77, 216, 255, 0.2);
+  flex-direction: column;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 4px 6px 4px 12px;
+  overflow: hidden;
+}
+
+.borderless-header {
+  display: flex;
+  align-items: center;
+  background: transparent !important;
+  border-bottom: none !important;
+  padding: 4px 0 10px 0;
   flex-shrink: 0;
 }
 
-.chat-input-bar input {
+.borderless-chat .chat-log {
   flex: 1;
-  background: rgba(12, 18, 28, 0.8);
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* Generous, comfortable spacing between message cards */
+}
+
+.borderless-chat .chat-msg {
+  animation: fadeIn 0.25s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.borderless-chat .chat-msg.assistant {
+  align-self: flex-start;
+  max-width: 92%;
+  background: rgba(3, 14, 26, 0.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(77, 216, 255, 0.22);
+  border-radius: 6px;
+  padding: 12px 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.borderless-chat .chat-msg.user {
+  align-self: flex-end;
+  max-width: 86%;
+  background: rgba(8, 22, 36, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 170, 50, 0.4);
+  border-radius: 6px;
+  padding: 10px 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.borderless-chat .msg-author {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #00e5ff;
+  margin-bottom: 6px;
+}
+
+.borderless-chat .chat-msg.user .msg-author {
+  color: #ffb84d;
+  text-align: right;
+}
+
+.borderless-chat .msg-content {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #d6f2ff;
+}
+
+.borderless-chat .chat-msg.user .msg-content {
+  color: #ffffff;
+}
+
+.borderless-chat .chat-input-bar {
+  display: flex;
+  gap: 10px;
+  padding: 12px 0 2px 0;
+  background: transparent;
+  border-top: none;
+  flex-shrink: 0;
+}
+
+.borderless-chat .chat-input-bar input {
+  flex: 1;
+  background: rgba(4, 16, 28, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(77, 216, 255, 0.3);
   color: #fff;
   font-family: var(--font-mono);
-  font-size: 11.5px;
-  padding: 8px 12px;
+  font-size: 12.5px;
+  padding: 12px 16px;
   border-radius: 6px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: all 0.25s;
 }
 
-.chat-input-bar input:focus {
+.borderless-chat .chat-input-bar input:focus {
   border-color: var(--cyan);
-  box-shadow: 0 0 8px var(--cyan-dim);
+  box-shadow: 0 0 12px var(--cyan-glow);
+}
+
+.borderless-chat .chat-input-bar .btn-primary {
+  background: rgba(0, 229, 255, 0.12);
+  border: 1px solid #00e5ff;
+  color: #00e5ff;
+  padding: 10px 22px;
+  font-family: 'Orbitron', var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.borderless-chat .chat-input-bar .btn-primary:hover {
+  background: var(--cyan);
+  color: #000;
+  box-shadow: 0 0 15px var(--cyan-glow);
 }
 
 .btn-primary {
@@ -777,11 +922,42 @@ body {
   user-select: none;
 }
 
+/* When Transitioned to Tactical Deck: Arc Reactor Remains Pulsing in Translucent Background */
 .splash-screen.hidden {
-  opacity: 0;
-  transform: scale(1.12);
-  visibility: hidden;
+  opacity: 1;
+  visibility: visible;
   pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(ellipse at center, #06192e 0%, #030f1c 45%, #010811 75%, #000308 100%);
+  cursor: default;
+}
+
+.splash-screen.hidden .splash-vignette {
+  opacity: 0.85;
+}
+
+.splash-screen.hidden .splash-grid {
+  opacity: 0.65;
+}
+
+.splash-screen.hidden .splash-centerpiece-wrapper {
+  opacity: 0.22;
+  filter: drop-shadow(0 0 25px rgba(0, 229, 255, 0.5));
+  transform: scale(0.96);
+  pointer-events: none;
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.splash-screen.hidden .neural-web-canvas {
+  opacity: 0.20;
+  pointer-events: none;
+  transition: opacity 0.7s ease;
+}
+
+.splash-screen.hidden .splash-footer {
+  opacity: 0;
+  pointer-events: none;
+  display: none;
 }
 
 /* Deep Vignette Shadow & Scanlines */
