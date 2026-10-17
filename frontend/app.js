@@ -487,9 +487,170 @@ btnVoiceToggle.addEventListener('click', async () => {
   }
 });
 
+// ==============================================================================
+// 8. 3D Neural Web Particle Constellation Engine (Iron Man HUD Voice Reactive)
+// ==============================================================================
+
+class NeuralWebVisualizer {
+  constructor(canvasId) {
+    this.canvas = document.getElementById(canvasId);
+    if (!this.canvas) return;
+    this.ctx = this.canvas.getContext('2d');
+    this.particles = [];
+    this.particleCount = 95;
+    this.isSpeaking = false;
+    this.speechCadence = 0;
+    this.time = 0;
+    this.animId = null;
+
+    this.init();
+  }
+
+  init() {
+    this.resize();
+    this.createParticles();
+    this.animate();
+  }
+
+  resize() {
+    if (!this.canvas) return;
+    this.width = this.canvas.width = 700;
+    this.height = this.canvas.height = 700;
+    this.cx = this.width / 2;
+    this.cy = this.height / 2;
+  }
+
+  createParticles() {
+    this.particles = [];
+    for (let i = 0; i < this.particleCount; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const baseRadius = 180 + Math.random() * 45;
+      this.particles.push({
+        angle: angle,
+        baseRadius: baseRadius,
+        currentRadius: baseRadius,
+        targetRadius: baseRadius,
+        z: (Math.random() - 0.5) * 120,
+        speed: (Math.random() * 0.005 + 0.003) * (Math.random() > 0.5 ? 1 : -1),
+        radialOscillation: Math.random() * Math.PI * 2,
+        oscillationSpeed: Math.random() * 0.04 + 0.02,
+        size: Math.random() * 2 + 1.8,
+        pulseOffset: Math.random() * Math.PI * 2,
+        baseAlpha: Math.random() * 0.4 + 0.55
+      });
+    }
+  }
+
+  setSpeaking(speaking) {
+    this.isSpeaking = speaking;
+  }
+
+  animate() {
+    this.time += 0.03;
+    const ctx = this.ctx;
+    ctx.clearRect(0, 0, this.width, this.height);
+
+    // Audio cadence simulation when speaking (voice fluctuation wave)
+    if (this.isSpeaking) {
+      const voiceWave = Math.sin(this.time * 6) * 0.45 + 
+                        Math.cos(this.time * 11) * 0.35 + 
+                        Math.sin(this.time * 19) * 0.2;
+      this.speechCadence = Math.max(0.2, 0.6 + voiceWave * 0.4);
+    } else {
+      this.speechCadence += (0 - this.speechCadence) * 0.08;
+    }
+
+    const maxConnectDist = this.isSpeaking ? 105 : 72;
+    const renderedNodes = [];
+
+    // 1. Update Particle Positions with 3D Orbital Projection
+    for (let i = 0; i < this.particles.length; i++) {
+      const p = this.particles[i];
+      p.angle += p.speed * (1 + this.speechCadence * 1.5);
+      p.radialOscillation += p.oscillationSpeed * (1 + this.speechCadence * 2);
+
+      // Expansion during voice activity
+      const expansion = this.speechCadence * (70 + Math.sin(p.radialOscillation) * 45);
+      p.targetRadius = p.baseRadius + expansion;
+      p.currentRadius += (p.targetRadius - p.currentRadius) * 0.12;
+
+      // 3D perspective projection
+      const fov = 380;
+      const scale = fov / (fov + p.z);
+      const px = this.cx + Math.cos(p.angle) * p.currentRadius * scale;
+      const py = this.cy + Math.sin(p.angle) * p.currentRadius * scale;
+
+      const alphaPulse = Math.sin(this.time * 3 + p.pulseOffset) * 0.25;
+      const currentAlpha = Math.min(1, Math.max(0.2, p.baseAlpha + alphaPulse + this.speechCadence * 0.4));
+
+      renderedNodes.push({
+        x: px,
+        y: py,
+        z: p.z,
+        size: p.size * scale * (1 + this.speechCadence * 0.6),
+        alpha: currentAlpha
+      });
+    }
+
+    // 2. Render Constellation Lattice Lines
+    for (let i = 0; i < renderedNodes.length; i++) {
+      for (let j = i + 1; j < renderedNodes.length; j++) {
+        const n1 = renderedNodes[i];
+        const n2 = renderedNodes[j];
+        const dx = n1.x - n2.x;
+        const dy = n1.y - n2.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < maxConnectDist) {
+          const lineAlpha = (1 - dist / maxConnectDist) * 0.55 * Math.min(n1.alpha, n2.alpha);
+          ctx.beginPath();
+          ctx.moveTo(n1.x, n1.y);
+          ctx.lineTo(n2.x, n2.y);
+          
+          if (this.isSpeaking) {
+            ctx.strokeStyle = `rgba(0, 229, 255, ${lineAlpha * 1.3})`;
+            ctx.lineWidth = 1.1;
+          } else {
+            ctx.strokeStyle = `rgba(77, 216, 255, ${lineAlpha * 0.65})`;
+            ctx.lineWidth = 0.75;
+          }
+          ctx.stroke();
+        }
+      }
+    }
+
+    // 3. Render Glowing Nodes
+    for (let i = 0; i < renderedNodes.length; i++) {
+      const n = renderedNodes[i];
+      
+      // Node Outer Glow
+      const glowGrad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.size * 3.5);
+      glowGrad.addColorStop(0, `rgba(0, 229, 255, ${n.alpha})`);
+      glowGrad.addColorStop(0.4, `rgba(77, 216, 255, ${n.alpha * 0.5})`);
+      glowGrad.addColorStop(1, 'rgba(0, 229, 255, 0)');
+
+      ctx.fillStyle = glowGrad;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.size * 3.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Node Hot Center Core
+      ctx.fillStyle = this.isSpeaking ? '#ffffff' : '#4dd8ff';
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.size * 0.8, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    this.animId = requestAnimationFrame(() => this.animate());
+  }
+}
+
+let neuralVisualizer = null;
+
 // Initialize on Load
 window.addEventListener('DOMContentLoaded', () => {
   initWebSocket();
   pollTelemetryFallback();
   setInterval(pollTelemetryFallback, 4000);
+  neuralVisualizer = new NeuralWebVisualizer('neuralWebCanvas');
 });
