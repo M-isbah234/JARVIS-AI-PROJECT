@@ -378,10 +378,7 @@ function speakResponse(text, force = false) {
 
     // Pulse and dissolve rings into 3D neural web while J.A.R.V.I.S. speaks
     utterance.onstart = () => {
-      // Temporarily halt recognizer so J.A.R.V.I.S. doesn't capture his own audio output
-      if (browserRecognizer && isRecognizing) {
-        try { browserRecognizer.stop(); } catch (e) {}
-      }
+      // Keep microphone active so user can say "Stop" at any moment to interrupt!
       const splash = document.getElementById('splashScreen');
       if (splash) splash.classList.remove('listening');
       setSpeakingVisualState(true);
@@ -413,6 +410,26 @@ function speakResponse(text, force = false) {
   }
 }
 
+// Immediate Stop Interrupt Controller
+function isStopCommand(text) {
+  if (!text) return false;
+  const clean = text.toLowerCase().trim();
+  return /\b(stop|quiet|shut\s*up|silence|ruko|chup|ruk\s*jao|bas\s*karo)\b/i.test(clean);
+}
+
+function stopSpeakingImmediately() {
+  if (window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+  }
+  setSpeakingVisualState(false);
+  const splash = document.getElementById('splashScreen');
+  const splashStatus = document.getElementById('splashStatusText');
+  if (isVoiceListening) {
+    if (splash) splash.classList.add('listening');
+    if (splashStatus) splashStatus.textContent = 'SPEECH HALTED // LISTENING';
+  }
+}
+
 // Ensure voices are loaded in Chromium browsers
 if (window.speechSynthesis) {
   window.speechSynthesis.onvoiceschanged = () => {
@@ -420,14 +437,14 @@ if (window.speechSynthesis) {
   };
 }
 
-// Browser Web Speech Recognition (Microphone Input)
+// Browser Web Speech Recognition (Microphone Input with Real-Time Interruption)
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let browserRecognizer = null;
 
 if (SpeechRecognition) {
   browserRecognizer = new SpeechRecognition();
   browserRecognizer.continuous = true;
-  browserRecognizer.interimResults = false;
+  browserRecognizer.interimResults = true; // Enables instantaneous "Stop" detection while talking
   browserRecognizer.lang = 'en-US';
 
   browserRecognizer.onstart = () => {
@@ -441,16 +458,29 @@ if (SpeechRecognition) {
   };
 
   browserRecognizer.onresult = (event) => {
-    const lastResult = event.results[event.results.length - 1];
-    if (lastResult.isFinal) {
-      const transcript = lastResult[0].transcript.trim();
-      if (transcript) {
-        console.log('[Web Speech Captured]:', transcript);
-        const splashStatus = document.getElementById('splashStatusText');
-        if (splashStatus) {
-          splashStatus.textContent = `ANALYZING // "${transcript.slice(0, 22).toUpperCase()}"`;
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const res = event.results[i];
+      const transcript = res[0].transcript.trim();
+
+      // PRIORITY 1: IMMEDIATE INTERRUPT - Halt speech whenever user says "Stop", "Ruko", "Chup"
+      if (isStopCommand(transcript)) {
+        stopSpeakingImmediately();
+        if (res.isFinal) {
+          appendChatMessage('user', transcript);
+          appendChatMessage('assistant', 'Speech output terminated, Sir.');
         }
-        sendUserMessage(transcript);
+        return;
+      }
+
+      // If J.A.R.V.I.S. is currently speaking out loud, ignore non-stop audio to prevent self-loop echo
+      if (window.speechSynthesis && window.speechSynthesis.speaking) {
+        continue;
+      }
+
+      // Process complete user command upon final utterance
+      if (res.isFinal && transcript) {
+        console.log('[Web Speech Captured]:', transcript);
+        handleVoiceCommandOrChat(transcript);
       }
     }
   };
@@ -471,11 +501,88 @@ if (SpeechRecognition) {
   };
 }
 
+// Voice Command Router (Start Deck, Stand Down, or Bilingual AI Core)
+function handleVoiceCommandOrChat(text) {
+  const clean = text.trim();
+  if (!clean) return;
+
+  const splashScreen = document.getElementById('splashScreen');
+  const splashStatus = document.getElementById('splashStatusText');
+
+  // 1. Transition to Chat & Hardware Deck:
+  // "when i say 'Lets start', 'Lets begin', 'Shuru karen', 'Haan bhi', it should transition to the chat and hardware side"
+  const START_REGEX = /\b(let'?s\s*start|let'?s\s*begin|shuru\s*kar(?:en|ein|o)|haan?\s*(?:bhi|bhai|jee)|han\s*bhi|chalo\s*shuru)\b/i;
+  if (START_REGEX.test(clean)) {
+    if (splashScreen) {
+      splashScreen.classList.add('hidden');
+    }
+    if (splashStatus) {
+      splashStatus.textContent = 'TACTICAL DECK ENGAGED';
+    }
+    appendChatMessage('user', clean);
+    const reply = "Tactical matrix and dialogue core engaged, Sir. Standing by.";
+    appendChatMessage('assistant', reply);
+    speakResponse(reply, true);
+    return;
+  }
+
+  // 2. Return back to Arc Reactor Centerpiece:
+  // "when i say 'Standown' it should return back to arc reactor"
+  const STANDDOWN_REGEX = /\b(stand\s*down|standown|stand-down|return\s*(?:to\s*)?arc|arc\s*core)\b/i;
+  if (STANDDOWN_REGEX.test(clean)) {
+    if (splashScreen) {
+      splashScreen.classList.remove('hidden');
+    }
+    if (splashStatus) {
+      splashStatus.textContent = 'NEURAL CORE ONLINE';
+    }
+    appendChatMessage('user', clean);
+    const reply = "Standing down to neural core, Sir.";
+    appendChatMessage('assistant', reply);
+    speakResponse(reply, true);
+    return;
+  }
+
+  // 3. Regular Command or Dialogue -> Chat Pipeline
+  if (splashStatus) {
+    splashStatus.textContent = `ANALYZING // "${clean.slice(0, 22).toUpperCase()}"`;
+  }
+  sendUserMessage(clean);
+}
+
 async function sendUserMessage(text) {
   const msg = text || chatInput.value.trim();
   if (!msg) return;
 
   chatInput.value = '';
+
+  // Check typed commands for start, standdown, and stop as well
+  const splashScreen = document.getElementById('splashScreen');
+  if (isStopCommand(msg)) {
+    stopSpeakingImmediately();
+    appendChatMessage('user', msg);
+    appendChatMessage('assistant', 'Speech output terminated, Sir.');
+    return;
+  }
+  const START_REGEX = /\b(let'?s\s*start|let'?s\s*begin|shuru\s*kar(?:en|ein|o)|haan?\s*(?:bhi|bhai|jee)|han\s*bhi|chalo\s*shuru)\b/i;
+  if (START_REGEX.test(msg)) {
+    if (splashScreen) splashScreen.classList.add('hidden');
+    appendChatMessage('user', msg);
+    const reply = "Tactical matrix and dialogue core engaged, Sir. Standing by.";
+    appendChatMessage('assistant', reply);
+    speakResponse(reply, true);
+    return;
+  }
+  const STANDDOWN_REGEX = /\b(stand\s*down|standown|stand-down|return\s*(?:to\s*)?arc|arc\s*core)\b/i;
+  if (STANDDOWN_REGEX.test(msg)) {
+    if (splashScreen) splashScreen.classList.remove('hidden');
+    appendChatMessage('user', msg);
+    const reply = "Standing down to neural core, Sir.";
+    appendChatMessage('assistant', reply);
+    speakResponse(reply, true);
+    return;
+  }
+
   appendChatMessage('user', msg);
 
   try {
