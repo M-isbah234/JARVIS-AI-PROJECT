@@ -336,8 +336,22 @@ function appendChatMessage(role, text) {
 let lastSpokenText = '';
 let lastSpokenTime = 0;
 
-function speakResponse(text) {
-  if (!isVoiceListening || !window.speechSynthesis) return;
+function setSpeakingVisualState(active) {
+  const splash = document.getElementById('splashScreen');
+  const splashStatus = document.getElementById('splashStatusText');
+  if (splash) {
+    splash.classList.toggle('speaking', active);
+  }
+  if (splashStatus) {
+    splashStatus.textContent = active ? 'TRANSMITTING // VOICE CADENCE' : 'NEURAL CORE ONLINE';
+  }
+  if (neuralVisualizer) {
+    neuralVisualizer.setSpeaking(active);
+  }
+}
+
+function speakResponse(text, force = false) {
+  if ((!isVoiceListening && !force) || !window.speechSynthesis) return;
   const now = Date.now();
   if (text === lastSpokenText && (now - lastSpokenTime < 3500)) {
     return; // Don't speak identical text twice within 3.5 seconds
@@ -359,9 +373,16 @@ function speakResponse(text) {
     if (preferred) utterance.voice = preferred;
     utterance.rate = 1.05;
     utterance.pitch = 0.95;
+
+    // Pulse and dissolve rings into 3D neural web while J.A.R.V.I.S. speaks
+    utterance.onstart = () => setSpeakingVisualState(true);
+    utterance.onend = () => setSpeakingVisualState(false);
+    utterance.onerror = () => setSpeakingVisualState(false);
+
     window.speechSynthesis.speak(utterance);
   } catch (e) {
     console.debug('TTS note:', e);
+    setSpeakingVisualState(false);
   }
 }
 
@@ -645,6 +666,33 @@ class NeuralWebVisualizer {
   }
 }
 
+// 9. Splash Screen Navigation & Interactive Transitions
+function initSplashTransitions() {
+  const splashScreen = document.getElementById('splashScreen');
+  const btnReturnSplash = document.getElementById('btnReturnSplash');
+  const coreTrigger = document.querySelector('.hud-innermost-core');
+
+  if (coreTrigger) {
+    coreTrigger.addEventListener('click', (e) => {
+      e.stopPropagation(); // Stay on splash to demo the voice visualizer effect
+      speakResponse('Good day, Sir. J.A.R.V.I.S. neural subroutines online. Standing by to manage your smart environment.', true);
+    });
+  }
+
+  if (splashScreen) {
+    splashScreen.addEventListener('click', () => {
+      splashScreen.classList.add('hidden');
+    });
+  }
+
+  if (btnReturnSplash && splashScreen) {
+    btnReturnSplash.addEventListener('click', (e) => {
+      e.stopPropagation();
+      splashScreen.classList.remove('hidden');
+    });
+  }
+}
+
 let neuralVisualizer = null;
 
 // Initialize on Load
@@ -653,4 +701,5 @@ window.addEventListener('DOMContentLoaded', () => {
   pollTelemetryFallback();
   setInterval(pollTelemetryFallback, 4000);
   neuralVisualizer = new NeuralWebVisualizer('neuralWebCanvas');
+  initSplashTransitions();
 });
