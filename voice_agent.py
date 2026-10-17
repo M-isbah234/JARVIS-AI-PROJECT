@@ -51,11 +51,13 @@ class VoiceControlEngine:
 
     def speak(self, text: str):
         """Speaks out loud to the operator."""
+        import re
         clean_text = text.replace("◈", "").replace("*", "").strip()
         print(f"\n>> [J.A.R.V.I.S.]: {clean_text}")
+        spoken_text = re.sub(r'J\.A\.R\.V\.I\.S\.?', 'Jarvis', clean_text, flags=re.IGNORECASE)
         if self._tts_engine:
             try:
-                self._tts_engine.say(clean_text)
+                self._tts_engine.say(spoken_text)
                 self._tts_engine.runAndWait()
             except Exception as e:
                 logger.debug(f"TTS audio playback note: {e}")
