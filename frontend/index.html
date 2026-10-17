@@ -18,9 +18,73 @@
       <img src="/static/jarvis_arc_core.jpg" class="splash-hero-img" alt="J.A.R.V.I.S. Arc Core" />
     </div>
 
-    <!-- Centerpiece Hitbox for Voice Listening (Anchored precisely over the Center Core) -->
+    <!-- Centerpiece Hitbox and Animated Concentric Blue Arc Core Rings -->
     <div class="splash-centerpiece-wrapper" title="Click J.A.R.V.I.S. Core to Speak">
-      <span id="splashStatusText" style="display:none">NEURAL CORE ONLINE</span>
+      <!-- Ambient Radial Backlight (Eliminates pitch-black voids between rings) -->
+      <div class="centerpiece-ambient-backlight"></div>
+
+      <!-- Concentric Holographic HUD Circular Logo (Clockwise and Anti-Clockwise Spinning Blue Rings) -->
+      <svg class="hud-centerpiece-svg" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <!-- Electric Cyan Filter Glow -->
+          <filter id="cyanGlow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="1.2" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <filter id="intenseGlow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="1.8" result="blur1" />
+            <feGaussianBlur stdDeviation="0.8" result="blur2" />
+            <feMerge>
+              <feMergeNode in="blur1" />
+              <feMergeNode in="blur2" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
+        <!-- Group: Outer Concentric Blue Elements (Rotating Clockwise & Counter-Clockwise) -->
+        <g class="hud-outer-elements">
+          <!-- Outermost Precision Bracket Track (r=262) - Rotates Clockwise -->
+          <circle cx="300" cy="300" r="262" class="hud-ring-outer-dashed" />
+          
+          <!-- Outer Segmented Arc Brackets (r=246) - Rotates Counter-Clockwise -->
+          <circle cx="300" cy="300" r="246" class="hud-ring-outer-brackets" />
+
+          <!-- Outer Accents & Corner Alignment Markers -->
+          <path d="M 50 300 H 70 M 530 300 H 550 M 300 50 V 70 M 300 530 V 550" class="hud-crosshair" />
+
+          <!-- Mid-Orbit Dashed & Segmented Ring (r=210) - Rotates Clockwise -->
+          <circle cx="300" cy="300" r="210" class="hud-ring-mid-dashed" />
+
+          <!-- Secondary Track with Accent Arcs (r=188) -->
+          <circle cx="300" cy="300" r="188" class="hud-ring-mid-solid" />
+
+          <!-- Dotted / Beaded Orbit Track (r=162) - Rotates Counter-Clockwise -->
+          <circle cx="300" cy="300" r="162" class="hud-ring-beaded" />
+
+          <!-- Compass Radial Calibration Ticks (r=138) - Rotates Clockwise -->
+          <circle cx="300" cy="300" r="138" class="hud-ring-ticks" />
+
+          <!-- Tachometer Segmented Block Gauge Arc (r=114) -->
+          <circle cx="300" cy="300" r="114" class="hud-ring-segmented" />
+        </g>
+
+        <!-- Group: Innermost Core Ring & Holographic Branding (Always Anchored - No Opaque Background Mask) -->
+        <g class="hud-innermost-core">
+          <!-- Core Glowing Cyan Border Ring -->
+          <circle cx="300" cy="300" r="88" class="hud-core-ring" />
+
+          <!-- Core Inner Secondary Fine Track -->
+          <circle cx="300" cy="300" r="76" class="hud-core-inner-track" />
+
+          <!-- Core Typography: J.A.R.V.I.S. in Futuristic Font -->
+          <text x="300" y="296" class="hud-core-title">J.A.R.V.I.S.</text>
+          <text x="300" y="322" class="hud-core-status" id="splashStatusText">NEURAL CORE ONLINE</text>
+        </g>
+      </svg>
     </div>
 
     <!-- Hidden compatibility hooks for JS functions -->

@@ -15,27 +15,34 @@
   --border-card: 1px solid rgba(77, 216, 255, 0.22);
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 /* Custom Sleek Scrollbar */
 ::-webkit-scrollbar {
   width: 4px;
   height: 4px;
 }
+
 ::-webkit-scrollbar-track {
   background: rgba(4, 8, 14, 0.6);
 }
+
 ::-webkit-scrollbar-thumb {
   background: rgba(77, 216, 255, 0.3);
   border-radius: 2px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: var(--cyan);
 }
 
 body {
   background-color: var(--bg-dark);
-  background-image: 
+  background-image:
     radial-gradient(circle at 15% 15%, rgba(77, 216, 255, 0.05) 0%, transparent 40%),
     radial-gradient(circle at 85% 85%, rgba(63, 224, 138, 0.04) 0%, transparent 40%),
     linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
@@ -98,8 +105,15 @@ body {
 }
 
 @keyframes pulseOrb {
-  0% { box-shadow: 0 0 4px var(--cyan-glow); opacity: 0.7; }
-  100% { box-shadow: 0 0 14px var(--cyan-glow); opacity: 1; }
+  0% {
+    box-shadow: 0 0 4px var(--cyan-glow);
+    opacity: 0.7;
+  }
+
+  100% {
+    box-shadow: 0 0 14px var(--cyan-glow);
+    opacity: 1;
+  }
 }
 
 .brand-title {
@@ -317,8 +331,18 @@ body {
 }
 
 @keyframes dockPulse {
-  0%, 100% { transform: scale(1); opacity: 0.9; }
-  50% { transform: scale(1.18); opacity: 1; filter: drop-shadow(0 0 6px var(--cyan)); }
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+
+  50% {
+    transform: scale(1.18);
+    opacity: 1;
+    filter: drop-shadow(0 0 6px var(--cyan));
+  }
 }
 
 .dock-tab-text-group {
@@ -779,7 +803,8 @@ body {
   flex-direction: column;
   width: min(440px, 32vw);
   flex-shrink: 0;
-  margin-left: auto; /* Pushes chat box to the far right */
+  margin-left: auto;
+  /* Pushes chat box to the far right */
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
@@ -804,7 +829,8 @@ body {
   padding: 8px 2px;
   display: flex;
   flex-direction: column;
-  gap: 16px; /* Proper, generous spacing between message cards */
+  gap: 16px;
+  /* Proper, generous spacing between message cards */
 }
 
 .borderless-chat .chat-msg {
@@ -812,17 +838,26 @@ body {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .borderless-chat .chat-msg.assistant {
   align-self: flex-start;
   max-width: 95%;
   background: rgba(3, 14, 26, 0.72) !important;
-  backdrop-filter: blur(1px) !important; /* Blur reduced to 7% */
+  backdrop-filter: blur(1px) !important;
+  /* Blur reduced to 7% */
   -webkit-backdrop-filter: blur(1px) !important;
-  border: none !important; /* Borderlines removed */
+  border: none !important;
+  /* Borderlines removed */
   border-radius: 6px;
   padding: 12px 16px;
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45) !important;
@@ -832,9 +867,11 @@ body {
   align-self: flex-end;
   max-width: 90%;
   background: rgba(8, 22, 36, 0.85) !important;
-  backdrop-filter: blur(1px) !important; /* Blur reduced to 7% */
+  backdrop-filter: blur(1px) !important;
+  /* Blur reduced to 7% */
   -webkit-backdrop-filter: blur(1px) !important;
-  border: none !important; /* Borderlines removed */
+  border: none !important;
+  /* Borderlines removed */
   border-radius: 6px;
   padding: 10px 16px;
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45) !important;
@@ -951,9 +988,9 @@ body {
   opacity: 1;
   visibility: visible;
   transform: scale(1);
-  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), 
-              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), 
-              visibility 0.65s;
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0.65s;
   cursor: pointer;
   user-select: none;
 }
@@ -978,20 +1015,16 @@ body {
   object-fit: cover;
   max-width: 100vw;
   max-height: 100vh;
+  mix-blend-mode: screen;
+  filter: contrast(1.1) brightness(0.91);
   transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s ease, opacity 0.6s ease;
   user-select: none;
   -webkit-user-drag: none;
 }
 
-/* Speaking State on Hero Image */
+/* Speaking State on Hero Image (Calm, steady without rapid heartbeat scaling) */
 .splash-screen.speaking .splash-hero-img {
-  filter: brightness(1.15) drop-shadow(0 0 35px rgba(0, 229, 255, 0.6)) drop-shadow(0 0 45px rgba(255, 179, 0, 0.45));
-  animation: pulseSpeakingHero 1.2s ease-in-out infinite alternate;
-}
-
-@keyframes pulseSpeakingHero {
-  0% { transform: scale(1); filter: brightness(1.08) drop-shadow(0 0 20px rgba(0, 229, 255, 0.4)); }
-  100% { transform: scale(1.025); filter: brightness(1.25) drop-shadow(0 0 45px rgba(0, 229, 255, 0.75)) drop-shadow(0 0 55px rgba(255, 179, 0, 0.55)); }
+  filter: contrast(1.1) brightness(1.10) drop-shadow(0 0 25px rgba(0, 229, 255, 0.45));
 }
 
 /* When Transitioned to Tactical Deck: Arc Reactor Remains in Background */
@@ -1012,8 +1045,11 @@ body {
 }
 
 .splash-screen.hidden .splash-centerpiece-wrapper {
-  opacity: 0;
+  opacity: 0.22;
+  filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.35));
+  transform: scale(0.96);
   pointer-events: none;
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Centerpiece Hitbox Assembly */
@@ -1044,87 +1080,112 @@ body {
   z-index: 3;
 }
 
+/* Ambient Radial Backlight */
+.centerpiece-ambient-backlight {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(102, 224, 255, 0.14) 0%, rgba(98, 182, 203, 0.06) 45%, transparent 70%);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: 1;
+}
+
 /* SVG Concentric HUD Rings */
 .hud-centerpiece-svg {
   width: 100%;
   height: 100%;
   overflow: visible;
-  filter: drop-shadow(0 0 25px rgba(0, 229, 255, 0.3));
+  filter: drop-shadow(0 0 20px rgba(56, 214, 255, 0.25));
   z-index: 5;
+  pointer-events: none;
 }
 
-/* Outermost Dashed & Bracket Tracks */
+/* 3. Concentric Dot Rings: Outermost Dashed Micro-Track (Pale Ice-Blue / White #C8F4FF to #E6FFFF) */
 .hud-ring-outer-dashed {
   fill: none;
-  stroke: rgba(77, 216, 255, 0.32);
+  stroke: #c8f4ff;
   stroke-width: 1.5;
   stroke-dasharray: 4 12;
+  opacity: 0.80;
+  filter: drop-shadow(0 0 4px rgba(200, 244, 255, 0.65));
   transform-origin: 300px 300px;
   animation: rotateClockwise 70s linear infinite;
 }
 
+/* 5. Outer Thick Segmented Ring (Bright Sky-Cyan #38D6FF to #5CE1FF) */
 .hud-ring-outer-brackets {
   fill: none;
-  stroke: #00e5ff;
+  stroke: #48dcff;
   stroke-width: 4.5;
   stroke-dasharray: 120 30 60 30 140 40;
-  filter: drop-shadow(0 0 7px rgba(0, 229, 255, 0.8));
+  filter: drop-shadow(0 0 8px rgba(56, 214, 255, 0.85)) drop-shadow(0 0 16px rgba(92, 225, 255, 0.45));
   transform-origin: 300px 300px;
   animation: rotateCounterClockwise 50s linear infinite;
 }
 
+/* 4. Thin Mid-Rings & Long Inner Arcs: Alignment Markers (Muted Glacier / Sky Blue ~60% opacity) */
 .hud-crosshair {
   fill: none;
-  stroke: rgba(77, 216, 255, 0.6);
-  stroke-width: 1.6;
+  stroke: #62b6cb;
+  stroke-width: 1.5;
+  opacity: 0.60;
 }
 
-/* Mid Rings */
+/* 4. Thin Mid-Rings & Long Inner Arcs (Muted Glacier / Sky Blue #62B6CB to #7FD1E8 at ~60% opacity) */
 .hud-ring-mid-dashed {
   fill: none;
-  stroke: rgba(77, 216, 255, 0.5);
-  stroke-width: 2;
+  stroke: #7fd1e8;
+  stroke-width: 1.5;
   stroke-dasharray: 90 20 40 25;
+  opacity: 0.60;
+  filter: drop-shadow(0 0 4px rgba(98, 182, 203, 0.6));
   transform-origin: 300px 300px;
   animation: rotateClockwise 40s linear infinite;
 }
 
 .hud-ring-mid-solid {
   fill: none;
-  stroke: rgba(77, 216, 255, 0.28);
-  stroke-width: 1.2;
+  stroke: #62b6cb;
+  stroke-width: 1.4;
+  opacity: 0.60;
+  filter: drop-shadow(0 0 4px rgba(98, 182, 203, 0.55));
 }
 
-/* Dotted / Beaded Track (Counter-Clockwise) */
+/* 3. Concentric Dot Rings (Pale Ice-Blue / White #C8F4FF to #E6FFFF with subtle cyan halo) */
 .hud-ring-beaded {
   fill: none;
-  stroke: #4dd8ff;
-  stroke-width: 3.5;
+  stroke: #e6ffff;
+  stroke-width: 3.2;
   stroke-dasharray: 1 14;
   stroke-linecap: round;
-  filter: drop-shadow(0 0 5px rgba(77, 216, 255, 0.9));
+  filter: drop-shadow(0 0 4px #c8f4ff) drop-shadow(0 0 8px rgba(102, 224, 255, 0.7));
   transform-origin: 300px 300px;
   animation: rotateCounterClockwise 28s linear infinite;
 }
 
-/* Micro-Degree Compass Calibration Ticks */
+/* 4. Compass Radial Calibration Ticks (Muted Glacier / Sky Blue #7FD1E8 at ~60% opacity) */
 .hud-ring-ticks {
   fill: none;
-  stroke: rgba(77, 216, 255, 0.65);
-  stroke-width: 2.2;
+  stroke: #7fd1e8;
+  stroke-width: 1.5;
   stroke-dasharray: 2 8;
+  opacity: 0.60;
+  filter: drop-shadow(0 0 4px rgba(98, 182, 203, 0.6));
   transform-origin: 300px 300px;
   animation: rotateClockwise 55s linear infinite;
 }
 
-/* Segmented Block Gauge Arc */
+/* 2. Inner Rectangular Gear Ticks (Desaturated Mint / Seafoam Cyan #78D8D8 to #9AEAEA) */
 .hud-ring-segmented {
   fill: none;
-  stroke: #00e5ff;
+  stroke: #86e0e0;
   stroke-width: 9;
   stroke-dasharray: 5 9;
   stroke-dashoffset: 45;
-  filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.9));
+  opacity: 0.90;
+  filter: drop-shadow(0 0 6px rgba(120, 216, 216, 0.75)) drop-shadow(0 0 12px rgba(154, 234, 234, 0.45));
   transform-origin: 300px 300px;
   animation: pulseSegmented 3.5s ease-in-out infinite;
 }
@@ -1137,46 +1198,54 @@ body {
   transform: none !important;
 }
 
+/* No dark circular background fill on inner/mid HUD rings */
 .hud-core-bg {
-  fill: rgba(3, 14, 28, 0.92);
-  filter: drop-shadow(0 0 15px rgba(0, 0, 0, 0.8));
+  fill: transparent;
+  display: none;
 }
 
+/* 1. Inner Solid Core Ring (Pure White-Hot #FFFFFF with soft #66E0FF outer bloom) */
 .hud-core-ring {
   fill: none;
-  stroke: #00e5ff;
+  stroke: #ffffff;
   stroke-width: 3.2;
-  filter: url(#cyanGlow);
+  filter: drop-shadow(0 0 6px #ffffff) drop-shadow(0 0 14px rgba(102, 224, 255, 0.75));
   animation: pulseCoreGlow 3s ease-in-out infinite;
 }
 
+/* 4. Inner Secondary Track (Muted Glacier #7FD1E8 at ~60% opacity) */
 .hud-core-inner-track {
   fill: none;
-  stroke: rgba(77, 216, 255, 0.45);
+  stroke: #7fd1e8;
   stroke-width: 1.4;
   stroke-dasharray: 4 6;
+  opacity: 0.60;
+  filter: drop-shadow(0 0 4px rgba(98, 182, 203, 0.55));
 }
 
+/* 1. J.A.R.V.I.S. Text (Pure White #FFFFFF with soft #66E0FF bloom) */
 .hud-core-title {
   font-family: 'Orbitron', 'JetBrains Mono', sans-serif;
   font-size: 26px;
   font-weight: 800;
-  fill: #e8f8ff;
+  fill: #ffffff;
   text-anchor: middle;
   dominant-baseline: middle;
   letter-spacing: 5px;
-  filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.95)) drop-shadow(0 0 20px rgba(0, 229, 255, 0.5));
+  filter: drop-shadow(0 0 6px #ffffff) drop-shadow(0 0 16px rgba(102, 224, 255, 0.85));
   transition: all 0.3s ease;
 }
 
+/* 1. Core Status (Ice-White #E8FFFF with subtle bloom) */
 .hud-core-status {
   font-family: var(--font-mono);
   font-size: 9px;
   font-weight: 600;
-  fill: rgba(77, 216, 255, 0.85);
+  fill: #e8ffff;
   text-anchor: middle;
   dominant-baseline: middle;
   letter-spacing: 2px;
+  filter: drop-shadow(0 0 4px rgba(102, 224, 255, 0.8));
 }
 
 /* Dissolve / Speaking State Transition */
@@ -1193,9 +1262,8 @@ body {
 }
 
 .splash-screen.speaking .hud-core-ring {
-  stroke: #ffffff;
-  filter: url(#intenseGlow);
-  animation: pulseSpeakingRate 0.8s ease-in-out infinite alternate;
+  stroke: #7fe8ff;
+  filter: drop-shadow(0 0 12px rgba(0, 229, 255, 0.95));
 }
 
 .splash-screen.speaking .hud-core-title {
@@ -1217,8 +1285,13 @@ body {
 }
 
 @keyframes pulseListeningBeacon {
-  from { opacity: 0.6; }
-  to { opacity: 1; }
+  from {
+    opacity: 0.6;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* Splash Footer & Call to Action */
@@ -1332,45 +1405,63 @@ body {
 
 /* Centerpiece Keyframe Animations */
 @keyframes rotateClockwise {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes rotateCounterClockwise {
-  from { transform: rotate(360deg); }
-  to { transform: rotate(0deg); }
+  from {
+    transform: rotate(360deg);
+  }
+
+  to {
+    transform: rotate(0deg);
+  }
 }
 
 @keyframes pulseSegmented {
-  0%, 100% { opacity: 0.85; stroke-dashoffset: 45; }
-  50% { opacity: 1; stroke-dashoffset: 25; }
+
+  0%,
+  100% {
+    opacity: 0.85;
+    stroke-dashoffset: 45;
+  }
+
+  50% {
+    opacity: 1;
+    stroke-dashoffset: 25;
+  }
 }
 
 @keyframes pulseCoreGlow {
-  0%, 100% {
-    filter: drop-shadow(0 0 6px rgba(0, 229, 255, 0.6));
-    stroke: #00e5ff;
+
+  0%,
+  100% {
+    filter: drop-shadow(0 0 5px #ffffff) drop-shadow(0 0 14px rgba(102, 224, 255, 0.75));
+    stroke: #ffffff;
   }
+
   50% {
-    filter: drop-shadow(0 0 14px rgba(0, 229, 255, 1));
-    stroke: #7fe8ff;
+    filter: drop-shadow(0 0 8px #ffffff) drop-shadow(0 0 22px rgba(102, 224, 255, 0.95)) drop-shadow(0 0 35px rgba(102, 224, 255, 0.5));
+    stroke: #e8ffff;
   }
 }
 
-@keyframes pulseSpeakingRate {
-  from {
-    filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.8));
-  }
-  to {
-    filter: drop-shadow(0 0 24px rgba(0, 229, 255, 1)) drop-shadow(0 0 38px rgba(0, 229, 255, 0.7));
-  }
-}
+
 
 @keyframes pulsePrompt {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 0.85;
     box-shadow: 0 0 16px rgba(0, 229, 255, 0.15);
   }
+
   50% {
     opacity: 1;
     box-shadow: 0 0 26px rgba(0, 229, 255, 0.4), inset 0 0 14px rgba(0, 229, 255, 0.2);
