@@ -410,11 +410,33 @@ function speakResponse(text, force = false) {
   }
 }
 
-// Immediate Stop Interrupt Controller
+// Immediate Stop Interrupt Controller (English, Roman Urdu, Urdu Script, and ASR phonetic mishearings)
 function isStopCommand(text) {
   if (!text) return false;
   const clean = text.toLowerCase().trim();
-  return /\b(stop|quiet|shut\s*up|silence|ruko|chup|ruk\s*jao|bas\s*karo)\b/i.test(clean);
+  const enMatch = /\b(stop|quiet|shut\s*up|silence|ruko|chup|ruk\s*jao|bas\s*karo|band\s*karo|khamosh|rocco|record)\b/i.test(clean);
+  const urMatch = /[\u0600-\u06FF]/.test(clean) && /(روکو|چپ|رک\s*جاؤ|بس\s*کرو|بند\s*کرو|خاموش)/.test(clean);
+  return enMatch || urMatch;
+}
+
+// Voice OFF Voice Command Detector ("voice off", "go to sleep", "awaz band karo", "so jao")
+function isVoiceOffCommand(text) {
+  if (!text) return false;
+  const clean = text.toLowerCase().trim();
+  const enMatch = /\b(voice\s*off|turn\s*off\s*voice|stop\s*listening|go\s*to\s*sleep|sleep\s*mode|disable\s*voice|standby\s*voice|voice\s*standby|sleep)\b/i.test(clean);
+  const urMatch = /\b(awaz\s*band(?:\s*karo)?|so\s*jao|sunna\s*band(?:\s*karo)?|mic\s*band(?:\s*karo)?|khamosh\s*ho\s*jao)\b/i.test(clean) ||
+                  (/[\u0600-\u06FF]/.test(clean) && /(آواز\s*بند|سو\s*جاؤ|سننا\s*بند|مائیک\s*بند|خاموش|بند\s*ہو\s*جاؤ)/.test(clean));
+  return enMatch || urMatch;
+}
+
+// Voice ON / Wake-Word Voice Command Detector ("hey jarvis", "wake up", "voice on", "suno jarvis", "utho jarvis")
+function isVoiceOnCommand(text) {
+  if (!text) return false;
+  const clean = text.toLowerCase().trim();
+  const enMatch = /\b(voice\s*on|turn\s*on\s*voice|hey\s*jarvis|wake\s*up|jarvis|start\s*listening|listen\s*to\s*me)\b/i.test(clean);
+  const urMatch = /\b(utho\s*jarvis|suno\s*jarvis|awaz\s*on(?:\s*karo)?|awaz\s*kholo|sun\s*rahe\s*ho)\b/i.test(clean) ||
+                  (/[\u0600-\u06FF]/.test(clean) && /(جاگو|اٹھو\s*جاروس|سنو\s*جاروس|آواز\s*آن|سن\s*رہے\s*ہو)/.test(clean));
+  return enMatch || urMatch;
 }
 
 function stopSpeakingImmediately() {
@@ -430,6 +452,39 @@ function stopSpeakingImmediately() {
   }
 }
 
+// Active Speech Language (Defaulting to ur-PK which handles both Urdu and code-switched English)
+let currentSpeechLang = localStorage.getItem('jarvis_speech_lang') || 'ur-PK';
+
+function setSpeechLanguage(lang, announce = false) {
+  currentSpeechLang = lang;
+  localStorage.setItem('jarvis_speech_lang', lang);
+  if (browserRecognizer) {
+    const wasListening = isRecognizing;
+    try { browserRecognizer.abort(); } catch (e) {}
+    browserRecognizer.lang = lang;
+    if (wasListening) {
+      setTimeout(() => {
+        try { browserRecognizer.start(); } catch (e) {}
+      }, 250);
+    }
+  }
+  updateLanguageDisplay();
+  if (announce) {
+    const label = lang === 'ur-PK' ? 'Urdu & bilingual' : 'English (US)';
+    const reply = `Speech recognition language switched to ${label} mode, Sir.`;
+    appendChatMessage('assistant', reply);
+    speakResponse(reply, true);
+  }
+}
+
+function updateLanguageDisplay() {
+  const langText = document.getElementById('langBtnText');
+  const splashLangBtn = document.getElementById('splashLangBtn');
+  const label = currentSpeechLang === 'ur-PK' ? 'LANG: URDU (PK)' : 'LANG: EN (US)';
+  if (langText) langText.textContent = label;
+  if (splashLangBtn) splashLangBtn.textContent = currentSpeechLang === 'ur-PK' ? '🌐 URDU' : '🌐 EN-US';
+}
+
 // Ensure voices are loaded in Chromium browsers
 if (window.speechSynthesis) {
   window.speechSynthesis.onvoiceschanged = () => {
@@ -437,7 +492,7 @@ if (window.speechSynthesis) {
   };
 }
 
-// Browser Web Speech Recognition (Microphone Input with Real-Time Interruption)
+// Browser Web Speech Recognition (Microphone Input with Real-Time Interruption & Passive Wake Listener)
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let browserRecognizer = null;
 
@@ -445,15 +500,17 @@ if (SpeechRecognition) {
   browserRecognizer = new SpeechRecognition();
   browserRecognizer.continuous = true;
   browserRecognizer.interimResults = true; // Enables instantaneous "Stop" detection while talking
-  browserRecognizer.lang = 'en-US';
+  browserRecognizer.lang = currentSpeechLang;
 
   browserRecognizer.onstart = () => {
     isRecognizing = true;
     const splash = document.getElementById('splashScreen');
     const splashStatus = document.getElementById('splashStatusText');
-    if (splash) splash.classList.add('listening');
-    if (splashStatus && (!window.speechSynthesis || !window.speechSynthesis.speaking)) {
-      splashStatus.textContent = 'LISTENING... // SPEAK NOW';
+    if (isVoiceListening) {
+      if (splash) splash.classList.add('listening');
+      if (splashStatus && (!window.speechSynthesis || !window.speechSynthesis.speaking)) {
+        splashStatus.textContent = 'LISTENING... // SPEAK NOW';
+      }
     }
   };
 
@@ -477,6 +534,44 @@ if (SpeechRecognition) {
         continue;
       }
 
+      // PRIORITY 2: WAKE WORD DETECTION (Turn Voice Recognition ON via Speech)
+      if (!isVoiceListening) {
+        if (isVoiceOnCommand(transcript)) {
+          if (res.isFinal) {
+            console.log('[Voice ON Wake Detected]:', transcript);
+            appendChatMessage('user', transcript);
+            setVoiceListeningState(true, true);
+          }
+        }
+        return;
+      }
+
+      // PRIORITY 3: TURN VOICE RECOGNITION OFF VIA SPEECH
+      if (isVoiceOffCommand(transcript)) {
+        if (res.isFinal) {
+          console.log('[Voice OFF Detected]:', transcript);
+          appendChatMessage('user', transcript);
+          setVoiceListeningState(false, true);
+        }
+        return;
+      }
+
+      // PRIORITY 4: LANGUAGE TOGGLE VIA SPEECH
+      if (/\b(switch\s*to\s*urdu|urdu\s*mode|urdu\s*mein\s*baat|اردو)/i.test(transcript)) {
+        if (res.isFinal) {
+          appendChatMessage('user', transcript);
+          setSpeechLanguage('ur-PK', true);
+        }
+        return;
+      }
+      if (/\b(switch\s*to\s*english|english\s*mode|انگریزی)/i.test(transcript)) {
+        if (res.isFinal) {
+          appendChatMessage('user', transcript);
+          setSpeechLanguage('en-US', true);
+        }
+        return;
+      }
+
       // Process complete user command upon final utterance
       if (res.isFinal && transcript) {
         console.log('[Web Speech Captured]:', transcript);
@@ -494,9 +589,15 @@ if (SpeechRecognition) {
 
   browserRecognizer.onend = () => {
     isRecognizing = false;
-    // Automatically re-listen if voice mode is engaged and not currently outputting audio
-    if (isVoiceListening && (!window.speechSynthesis || !window.speechSynthesis.speaking)) {
-      try { browserRecognizer.start(); } catch (e) {}
+    // Keep continuous background listening armed (Active or Passive Wake Word Standby)
+    if (!window.speechSynthesis || !window.speechSynthesis.speaking) {
+      setTimeout(() => {
+        try {
+          if (!isRecognizing && browserRecognizer) {
+            browserRecognizer.start();
+          }
+        } catch (e) {}
+      }, 350);
     }
   };
 }
@@ -511,8 +612,12 @@ function handleVoiceCommandOrChat(text) {
 
   // 1. Transition to Chat & Hardware Deck:
   // "when i say 'Lets start', 'Lets begin', 'Shuru karen', 'Haan bhi', it should transition to the chat and hardware side"
-  const START_REGEX = /\b(let'?s\s*start|let'?s\s*begin|shuru\s*kar(?:en|ein|o)|haan?\s*(?:bhi|bhai|jee)|han\s*bhi|chalo\s*shuru)\b/i;
-  if (START_REGEX.test(clean)) {
+  const isStartCmd = (
+    /\b(let'?s\s*start|let'?s\s*begin|shuru\s*kar(?:en|ein|o|iye)?|haan?\s*(?:bhi|bhai|jee|ji)?|han\s*bhi|chalo\s*shuru|sure\s*(?:karen|current|can)|sugar\s*can|shoe\s*can|on\s*the|hun\s*bee|harm\s*be)\b/i.test(clean) ||
+    (/[\u0600-\u06FF]/.test(clean) && /(شروع\s*(?:کریں|کرو|کیجیے)?|ہاں\s*(?:بھائی|جی|بھی)|چلو)/.test(clean))
+  );
+
+  if (isStartCmd) {
     if (splashScreen) {
       splashScreen.classList.add('hidden');
     }
@@ -528,8 +633,12 @@ function handleVoiceCommandOrChat(text) {
 
   // 2. Return back to Arc Reactor Centerpiece:
   // "when i say 'Standown' it should return back to arc reactor"
-  const STANDDOWN_REGEX = /\b(stand\s*down|standown|stand-down|return\s*(?:to\s*)?arc|arc\s*core)\b/i;
-  if (STANDDOWN_REGEX.test(clean)) {
+  const isStandDownCmd = (
+    /\b(stand\s*down|standown|stand-down|return\s*(?:to\s*)?arc|arc\s*core|wapas\s*jao|piche\s*hato)\b/i.test(clean) ||
+    (/[\u0600-\u06FF]/.test(clean) && /(واپس\s*جاؤ|کھڑے\s*ہو\s*جاؤ|سٹینڈ\s*ڈاؤن)/.test(clean))
+  );
+
+  if (isStandDownCmd) {
     if (splashScreen) {
       splashScreen.classList.remove('hidden');
     }
@@ -564,8 +673,11 @@ async function sendUserMessage(text) {
     appendChatMessage('assistant', 'Speech output terminated, Sir.');
     return;
   }
-  const START_REGEX = /\b(let'?s\s*start|let'?s\s*begin|shuru\s*kar(?:en|ein|o)|haan?\s*(?:bhi|bhai|jee)|han\s*bhi|chalo\s*shuru)\b/i;
-  if (START_REGEX.test(msg)) {
+  const isStartCmd = (
+    /\b(let'?s\s*start|let'?s\s*begin|shuru\s*kar(?:en|ein|o|iye)?|haan?\s*(?:bhi|bhai|jee|ji)?|han\s*bhi|chalo\s*shuru)\b/i.test(msg) ||
+    (/[\u0600-\u06FF]/.test(msg) && /(شروع\s*(?:کریں|کرو|کیجیے)?|ہاں\s*(?:بھائی|جی|بھی)|چلو)/.test(msg))
+  );
+  if (isStartCmd) {
     if (splashScreen) splashScreen.classList.add('hidden');
     appendChatMessage('user', msg);
     const reply = "Tactical matrix and dialogue core engaged, Sir. Standing by.";
@@ -573,8 +685,11 @@ async function sendUserMessage(text) {
     speakResponse(reply, true);
     return;
   }
-  const STANDDOWN_REGEX = /\b(stand\s*down|standown|stand-down|return\s*(?:to\s*)?arc|arc\s*core)\b/i;
-  if (STANDDOWN_REGEX.test(msg)) {
+  const isStandDownCmd = (
+    /\b(stand\s*down|standown|stand-down|return\s*(?:to\s*)?arc|arc\s*core|wapas\s*jao|piche\s*hato)\b/i.test(msg) ||
+    (/[\u0600-\u06FF]/.test(msg) && /(واپس\s*جاؤ|کھڑے\s*ہو\s*جاؤ|سٹینڈ\s*ڈاؤن)/.test(msg))
+  );
+  if (isStandDownCmd) {
     if (splashScreen) splashScreen.classList.remove('hidden');
     appendChatMessage('user', msg);
     const reply = "Standing down to neural core, Sir.";
@@ -659,31 +774,42 @@ async function setVoiceListeningState(active, speakGreeting = false) {
 
     if (speakGreeting) {
       if (splashStatus) splashStatus.textContent = 'TRANSMITTING // INITIALIZING';
-      appendChatMessage('assistant', 'Microphone audio feed initialized. Standing by for your commands, Sir.');
-      speakResponse('I am listening, Sir. How may I assist you?', true);
+      const greeting = currentSpeechLang === 'ur-PK' ? 
+        'جی سر، میں سن رہا ہوں۔ بتائیے کیا حکم ہے؟' : 
+        'I am listening, Sir. Standing by for your commands.';
+      appendChatMessage('assistant', greeting);
+      speakResponse(greeting, true);
     } else {
       if (splashStatus) splashStatus.textContent = 'LISTENING... // SPEAK NOW';
     }
   } else {
     if (splash) splash.classList.remove('listening');
     if (splashStatus) splashStatus.textContent = 'NEURAL CORE ONLINE';
-    if (splashVoiceStatus) splashVoiceStatus.textContent = 'VOICE LISTENERS STANDING BY // CLICK LOGO TO SPEAK';
+    if (splashVoiceStatus) splashVoiceStatus.textContent = 'VOICE STANDBY // SAY "HEY JARVIS" OR "SUNO JARVIS"';
 
-    if (browserRecognizer && isRecognizing) {
-      try { browserRecognizer.stop(); } catch (e) {}
-    }
-    if (window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-    }
     try {
       fetch('/api/voice/stop', { method: 'POST' });
     } catch (e) {}
-    appendChatMessage('assistant', 'Voice listeners disengaged.');
+
+    // Ensure speech recognizer is armed in low-overhead passive wake standby mode
+    if (browserRecognizer && !isRecognizing) {
+      try { browserRecognizer.start(); } catch (e) {}
+    }
+
+    if (speakGreeting) {
+      const farewell = currentSpeechLang === 'ur-PK' ? 
+        'وائس ریکگنیشن اسٹینڈ بائی پر ہے۔ جگانے کے لیے کہیے سنو جاروس۔' : 
+        'Voice listeners disengaged. Standing by for wake word, Sir.';
+      appendChatMessage('assistant', farewell);
+      speakResponse(farewell, true);
+    } else {
+      appendChatMessage('assistant', 'Voice listeners disengaged. Standing by for wake word.');
+    }
   }
 }
 
 btnVoiceToggle.addEventListener('click', () => {
-  setVoiceListeningState(!isVoiceListening, !isVoiceListening);
+  setVoiceListeningState(!isVoiceListening, true);
 });
 
 // ==============================================================================
@@ -978,6 +1104,8 @@ function initSplashTransitions() {
   const splashScreen = document.getElementById('splashScreen');
   const btnReturnSplash = document.getElementById('btnReturnSplash');
   const logoWrapper = document.querySelector('.splash-centerpiece-wrapper');
+  const btnLangToggle = document.getElementById('btnLangToggle');
+  const splashLangBtn = document.getElementById('splashLangBtn');
 
   if (logoWrapper) {
     logoWrapper.addEventListener('click', (e) => {
@@ -1000,6 +1128,22 @@ function initSplashTransitions() {
       splashScreen.classList.remove('hidden');
     });
   }
+
+  // Language Toggle Button Handlers (HUD and Splash)
+  if (btnLangToggle) {
+    btnLangToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const nextLang = currentSpeechLang === 'ur-PK' ? 'en-US' : 'ur-PK';
+      setSpeechLanguage(nextLang, true);
+    });
+  }
+  if (splashLangBtn) {
+    splashLangBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const nextLang = currentSpeechLang === 'ur-PK' ? 'en-US' : 'ur-PK';
+      setSpeechLanguage(nextLang, true);
+    });
+  }
 }
 
 let neuralVisualizer = null;
@@ -1011,4 +1155,5 @@ window.addEventListener('DOMContentLoaded', () => {
   setInterval(pollTelemetryFallback, 4000);
   neuralVisualizer = new NeuralWebVisualizer('neuralWebCanvas');
   initSplashTransitions();
+  updateLanguageDisplay();
 });
