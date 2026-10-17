@@ -38,7 +38,15 @@ async def test_bilingual_smart_plug_intents():
     assert res7["action"] == "set_brightness"
     assert res7["intent_data"]["level"] == 30
 
-    # 8. General conversational inquiry
-    res8 = await bot.chat("Who are you?")
-    assert res8["action"] is None
-    assert "j.a.r.v.i.s" in res8["response"].lower()
+    # 8. Urdu Script Turn ON ("بتی جلا دو")
+    res8 = await bot.chat("براہ کرم بتی جلا دو")
+    assert res8["action"] == "turn_on"
+
+    # 9. Urdu Script Turn OFF ("بتی بند کرو")
+    res9 = await bot.chat("بتی بند کرو")
+    assert res9["action"] == "turn_off"
+
+    # 10. General conversational inquiry
+    res10 = await bot.chat("Who are you?")
+    assert res10["action"] is None
+    assert "j.a.r.v.i.s" in res10["response"].lower()

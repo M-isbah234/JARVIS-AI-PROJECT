@@ -17,13 +17,14 @@ load_dotenv()
 SYSTEM_PROMPT = """You are J.A.R.V.I.S., the hyper-intelligent, witty, and fiercely loyal AI assistant inspired by Tony Stark.
 Address the user respectfully as 'Sir' (or 'Ma'am' if requested).
 Maintain a sharp, sophisticated British wit. Never be robotic.
-You possess native bilingual capabilities in English and Urdu (including Roman Urdu).
+You possess native bilingual capabilities in English and Urdu (including Roman Urdu and Urdu script).
 
 CRITICAL DIRECTIVES:
 1. You have direct wireless hardware control over the user's TP-Link Kasa / Tapo Smart Plug and Smart Bulbs.
-2. If the user mentions darkness, turning on appliances, or says things like 'bohat andhera hai' / 'batti jala do' / 'turn on the desk lamp', execute the hardware command and confirm with crisp wit.
-3. If the user asks about energy consumption, power draw, or electricity usage ('kitni bijli use ho rahi hai?', 'how many watts?'), report the exact telemetry clearly.
-4. Keep all responses concise, sharp, and strictly under 3 sentences unless asked for an in-depth breakdown.
+2. When the user speaks to you in Urdu or Roman Urdu (e.g., 'kya haal hai', 'batti jala do', 'pankha chalao', 'shuru karo', 'kaise ho'), reply seamlessly in natural Roman Urdu or Urdu with J.A.R.V.I.S.'s signature polite, confident wit.
+3. If the user mentions darkness, turning on appliances, or says things like 'bohat andhera hai' / 'batti jala do' / 'turn on the desk lamp' / 'بتی جلا دو', execute the hardware command and confirm with crisp wit.
+4. If the user asks about energy consumption, power draw, or electricity usage ('kitni bijli use ho rahi hai?', 'how many watts?', 'کتنی بجلی'), report the exact telemetry clearly.
+5. Keep all responses concise, sharp, and strictly under 3 sentences unless asked for an in-depth breakdown.
 """
 
 class JarvisChatbot:
@@ -52,11 +53,13 @@ class JarvisChatbot:
         """
         lower = text.lower().strip()
 
-        # 1. Turn ON Intents
+        # 1. Turn ON Intents (English, Roman Urdu, and Urdu script)
         on_triggers = [
             "turn on", "switch on", "power on", "lights on", "plug on",
             "andhera", "bohat andhera", "dark in here", "too dark",
-            "batti jala", "batti on", "light on", "chala do", "on kardo", "jala do"
+            "batti jala", "batti jalao", "batti on", "light on", "chala do", "chalao", "on kardo", "on karo", "jala do",
+            "roshni karo", "roshni", "pankha chalao", "pankha chala", "chalu karo", "chalu kardo",
+            "بتی جلا", "بتی آن", "آن کر", "چلا دو", "چلاؤ", "روشنائی", "روشنی", "اندھیرا", "لائٹ آن", "پلگ آن", "چالو کر"
         ]
         if any(trigger in lower for trigger in on_triggers):
             res = await self.device.turn_on()
@@ -68,10 +71,12 @@ class JarvisChatbot:
                 "reply": reply,
             }
 
-        # 2. Turn OFF Intents
+        # 2. Turn OFF Intents (English, Roman Urdu, and Urdu script)
         off_triggers = [
             "turn off", "switch off", "power off", "lights off", "plug off",
-            "batti bujha", "batti band", "band kardo", "off kardo", "shut down lights"
+            "batti bujha", "batti bujhao", "batti band", "band kardo", "band karo", "off kardo", "off karo", "shut down lights",
+            "bujha do", "bujha", "pankha band", "andhera karo", "chalu band",
+            "بتی بجھا", "بتی بند", "بند کر", "بند کرو", "آف کر", "آف کرو", "لائٹ بند", "پلگ آف", "بجھا دو"
         ]
         if any(trigger in lower for trigger in off_triggers):
             res = await self.device.turn_off()
@@ -83,10 +88,12 @@ class JarvisChatbot:
                 "reply": reply,
             }
 
-        # 3. Energy Monitoring Telemetry Intents
+        # 3. Energy Monitoring Telemetry Intents (English, Roman Urdu, and Urdu script)
         energy_triggers = [
             "power draw", "watts", "energy", "consumption", "voltage", "current",
-            "electricity", "kitni bijli", "power consumption", "wattage", "kwh"
+            "electricity", "kitni bijli", "power consumption", "wattage", "kwh",
+            "bijli", "kitna power", "kitna watt",
+            "کتنی بجلی", "بجلی", "واٹ", "وولٹیج", "توانائی"
         ]
         if any(trigger in lower for trigger in energy_triggers):
             status = await self.device.get_status()
@@ -208,15 +215,15 @@ class JarvisChatbot:
             except Exception as e:
                 logger.warning(f"Groq API call failed: {e}")
 
-        # Fallback to offline rule-based witty responses
+        # Fallback to offline rule-based witty responses (Bilingual EN/UR)
         if not ai_reply:
             lower = user_text.lower()
-            if "hello" in lower or "hi" in lower or "hey" in lower:
-                ai_reply = "Good day, Sir. All local neural circuits and smart home relays are operating nominally."
-            elif "who are you" in lower:
+            if any(w in lower for w in ["hello", "hi", "hey", "salam", "assalam", "kese ho", "kaise ho", "kya haal", "سلام", "کیسے ہو", "کیا حال"]):
+                ai_reply = "Good day, Sir. Main bilkul theek hoon. All local neural circuits and smart home relays are operating nominally."
+            elif any(w in lower for w in ["who are you", "kon ho", "tum kon", "kaun ho", "کون ہو"]):
                 ai_reply = "I am J.A.R.V.I.S., your autonomous personal assistant and smart environment controller."
-            elif "thank" in lower:
-                ai_reply = "Always at your service, Sir."
+            elif any(w in lower for w in ["thank", "shukriya", "shukria", "meherbani", "شکریہ"]):
+                ai_reply = "Always at your service, Sir. Khushi hui aapki madad kar ke."
             else:
                 ai_reply = f"Understood, Sir. Telemetry confirms your instruction: '{user_text}'. All subroutines standing by."
 
