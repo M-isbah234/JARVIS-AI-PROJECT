@@ -419,6 +419,16 @@ function isStopCommand(text) {
   return enMatch || urMatch;
 }
 
+// Voice OFF Voice Command Detector ("voice off", "go to sleep", "awaz band karo", "so jao")
+function isVoiceOffCommand(text) {
+  if (!text) return false;
+  const clean = text.toLowerCase().trim();
+  const enMatch = /\b(voice\s*off|turn\s*off\s*voice|stop\s*listening|go\s*to\s*sleep|sleep\s*mode|disable\s*voice|standby\s*voice|voice\s*standby|sleep)\b/i.test(clean);
+  const urMatch = /\b(awaz\s*band(?:\s*karo)?|so\s*jao|sunna\s*band(?:\s*karo)?|mic\s*band(?:\s*karo)?|khamosh\s*ho\s*jao)\b/i.test(clean) ||
+                  (/[\u0600-\u06FF]/.test(clean) && /(آواز\s*بند|سو\s*جاؤ|سننا\s*بند|مائیک\s*بند|خاموش|بند\s*ہو\s*جاؤ)/.test(clean));
+  return enMatch || urMatch;
+}
+
 function stopSpeakingImmediately() {
   if (window.speechSynthesis) {
     window.speechSynthesis.cancel();
@@ -516,6 +526,21 @@ if (SpeechRecognition) {
 
       // Only process commands when voice recognition is active
       if (!isVoiceListening) {
+        return;
+      }
+
+      // PRIORITY 2: TURN VOICE RECOGNITION OFF VIA SPEECH
+      if (isVoiceOffCommand(transcript)) {
+        if (res.isFinal) {
+          console.log('[Voice OFF Command]:', transcript);
+          appendChatMessage('user', transcript);
+          const reply = currentSpeechLang === 'ur-PK' ? 
+            'وائس ریکگنیشن بند کر دی گئی ہے، سر۔' : 
+            'Voice listeners disengaged, Sir.';
+          appendChatMessage('assistant', reply);
+          speakResponse(reply, true);
+          setVoiceListeningState(false, false, false);
+        }
         return;
       }
 
@@ -681,7 +706,7 @@ document.querySelectorAll('.quick-chips .chip').forEach(chip => {
 });
 
 // 7. Master Voice Listener & Speaker State Controller
-async function setVoiceListeningState(active, speakGreeting = false) {
+async function setVoiceListeningState(active, speakGreeting = false, immediateMute = true) {
   isVoiceListening = active;
   const splash = document.getElementById('splashScreen');
   const splashStatus = document.getElementById('splashStatusText');
@@ -728,13 +753,15 @@ async function setVoiceListeningState(active, speakGreeting = false) {
     if (browserRecognizer && isRecognizing) {
       try { browserRecognizer.stop(); } catch (e) {}
     }
-    if (window.speechSynthesis) {
+    if (immediateMute && window.speechSynthesis) {
       window.speechSynthesis.cancel();
     }
     try {
       fetch('/api/voice/stop', { method: 'POST' });
     } catch (e) {}
-    appendChatMessage('assistant', 'Voice listeners disengaged.');
+    if (immediateMute) {
+      appendChatMessage('assistant', 'Voice listeners disengaged.');
+    }
   }
 }
 
