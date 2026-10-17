@@ -915,7 +915,14 @@ body {
   animation: pulseSegmented 3.5s ease-in-out infinite;
 }
 
-/* Innermost Core Assembly */
+/* Innermost Core Assembly - Rock-Solid & Centered (Never Moves or Scales) */
+.hud-innermost-core,
+.hud-innermost-core *,
+.splash-screen.speaking .hud-innermost-core,
+.splash-screen.speaking .hud-innermost-core * {
+  transform: none !important;
+}
+
 .hud-core-bg {
   fill: rgba(3, 14, 28, 0.92);
   filter: drop-shadow(0 0 15px rgba(0, 0, 0, 0.8));
@@ -974,7 +981,7 @@ body {
 .splash-screen.speaking .hud-core-ring {
   stroke: #ffffff;
   filter: url(#intenseGlow);
-  animation: pulseSpeakingRate 0.5s ease-in-out infinite alternate;
+  animation: pulseSpeakingRate 0.8s ease-in-out infinite alternate;
 }
 
 .splash-screen.speaking .hud-core-title {
@@ -1080,12 +1087,10 @@ body {
 
 @keyframes pulseSpeakingRate {
   from {
-    filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.8));
-    transform: scale(0.99);
+    filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.8));
   }
   to {
-    filter: drop-shadow(0 0 20px rgba(0, 229, 255, 1)) drop-shadow(0 0 35px rgba(0, 229, 255, 0.7));
-    transform: scale(1.02);
+    filter: drop-shadow(0 0 24px rgba(0, 229, 255, 1)) drop-shadow(0 0 38px rgba(0, 229, 255, 0.7));
   }
 }
 
