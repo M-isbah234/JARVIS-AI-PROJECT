@@ -687,20 +687,6 @@ class NeuralWebVisualizer {
     // Dynamic active speech radius modulated by voice cadence
     const currentVoiceRadius = normalSpeakRadius + (maxStretchRadius - normalSpeakRadius) * this.voiceIntensity;
 
-    // Background Electric Cyan Aura (Subtle living plasma breath from video)
-    if (this.speechCadence > 0.02) {
-      const auraR = (normalSpeakRadius + (maxStretchRadius - normalSpeakRadius) * this.voiceIntensity) * 0.92;
-      const auraGrad = ctx.createRadialGradient(this.cx, this.cy, 90, this.cx, this.cy, auraR);
-      auraGrad.addColorStop(0, 'rgba(0, 229, 255, 0)');
-      auraGrad.addColorStop(0.5, `rgba(0, 229, 255, ${0.035 * this.voiceIntensity * this.speechCadence})`);
-      auraGrad.addColorStop(0.85, `rgba(0, 229, 255, ${0.075 * this.voiceIntensity * this.speechCadence})`);
-      auraGrad.addColorStop(1, 'rgba(0, 229, 255, 0)');
-      ctx.fillStyle = auraGrad;
-      ctx.beginPath();
-      ctx.arc(this.cx, this.cy, auraR, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
     const maxConnectDist = this.isSpeaking ? Math.max(78, this.minDim * 0.09) : 54;
     const maxConnectDistSq = maxConnectDist * maxConnectDist;
     const renderedNodes = [];
