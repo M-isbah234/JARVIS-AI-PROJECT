@@ -59,13 +59,19 @@ Bypassing bulky third-party cloud apps, J.A.R.V.I.S. connects directly to your T
 
 ## 🗣️ Bilingual Voice & Natural Language Commands
 
-J.A.R.V.I.S. understands natural phrasing across both **English** and **Urdu (including Roman Urdu)**:
+J.A.R.V.I.S. understands natural phrasing across both **English** and **Urdu (including Roman Urdu and Urdu Script)**:
 
 | Intent | English Examples | Urdu / Roman Urdu Examples | Action |
 | :--- | :--- | :--- | :--- |
-| **Power On** | *"Turn on the desk lamp"*, *"Power on"*, *"It's too dark in here"* | *"Batti jala do"*, *"Bohat andhera hai"*, *"Chala do"*, *"Light on kardo"* | Dispatches wireless `turn_on()` |
-| **Power Off** | *"Turn off the plug"*, *"Shut down lights"*, *"Cut the power"* | *"Batti bujha do"*, *"Batti band kardo"*, *"Off kardo"*, *"Band karo"* | Dispatches wireless `turn_off()` |
-| **Energy Telemetry** | *"How much power is it drawing?"*, *"What's the current wattage?"* | *"Kitni bijli use ho rahi hai?"*, *"Kitne watts consume ho rahe hain?"* | Queries `Module.Energy` and reports Watts & kWh |
+| **Voice ON (Wake Word)** | *"Hey Jarvis"*, *"Wake up"*, *"Voice on"* | *"Suno Jarvis"*, *"Utho Jarvis"*, *"Awaz on karo"*, *"جاگو"* | Wakes J.A.R.V.I.S. from standby and activates continuous microphone listening |
+| **Voice OFF (Standby)** | *"Voice off"*, *"Go to sleep"*, *"Stop listening"* | *"Awaz band karo"*, *"So jao"*, *"Sunna band karo"*, *"آواز بند کرو"* | Disengages voice recognition into low-overhead passive wake-word standby |
+| **Immediate Speech Stop** | *"Stop"*, *"Quiet"*, *"Shut up"*, *"Silence"* | *"Ruko"*, *"Chup"*, *"Ruk jao"*, *"Bas karo"*, *"روکو"* | Instantly terminates active speech output mid-sentence |
+| **Tactical Deck Transition** | *"Let's start"*, *"Let's begin"* | *"Shuru karen"*, *"Haan bhi"*, *"Chalo shuru"*, *"شروع کریں"* | Transitions smoothly from Arc Reactor logo to Chat & Hardware Deck |
+| **Return to Arc Reactor** | *"Standdown"*, *"Stand down"*, *"Return to arc"* | *"Wapas jao"*, *"Piche hato"*, *"واپس جاؤ"* | Returns interface to the pulsing Arc Reactor neural centerpiece |
+| **Language Toggle** | *"Switch to Urdu"*, *"Switch to English"* | *"Urdu mode"*, *"English mode"*, *"اردو"* | Switches browser speech recognition model between `ur-PK` and `en-US` |
+| **Power On** | *"Turn on the desk lamp"*, *"Power on"*, *"It's too dark in here"* | *"Batti jala do"*, *"Bohat andhera hai"*, *"Chala do"*, *"بتی جلا دو"* | Dispatches wireless `turn_on()` to smart plug / bulb |
+| **Power Off** | *"Turn off the plug"*, *"Shut down lights"*, *"Cut the power"* | *"Batti bujha do"*, *"Batti band kardo"*, *"Off kardo"*, *"بتی بند کرو"* | Dispatches wireless `turn_off()` to smart plug / bulb |
+| **Energy Telemetry** | *"How much power is it drawing?"*, *"What's the current wattage?"* | *"Kitni bijli use ho rahi hai?"*, *"Kitne watts consume ho rahe hain?"*, *"کتنی بجلی"* | Queries `Module.Energy` and reports Watts & kWh |
 | **Dimming / Brightness** | *"Dim the light to 30 percent"*, *"Set brightness to 80%"* | *"Roshni kam kardo 40 percent"* | Adjusts bulb brightness level (1–100) |
 | **General Conversational**| *"Who are you?"*, *"Tell me a joke"*, *"System status"* | *"Kya haal hai Jarvis?"*, *"Shukriya"* | Routes to Groq (Llama 3.3 70B) or Gemini with British wit |
 
