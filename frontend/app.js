@@ -346,7 +346,9 @@ function speakResponse(text) {
   lastSpokenTime = now;
   try {
     window.speechSynthesis.cancel();
-    const cleanText = text.replace(/[*#◈_`]/g, '').trim();
+    let cleanText = text.replace(/[*#◈_`]/g, '').trim();
+    // Pronounce as "Jarvis" in audio while retaining "J.A.R.V.I.S." in written chat
+    cleanText = cleanText.replace(/J\.A\.R\.V\.I\.S\.?/gi, 'Jarvis');
     if (!cleanText) return;
     const utterance = new SpeechSynthesisUtterance(cleanText);
     const voices = window.speechSynthesis.getVoices();
