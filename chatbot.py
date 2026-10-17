@@ -197,8 +197,9 @@ class JarvisChatbot:
                 messages.extend(self.history[-6:])
                 messages.append({"role": "user", "content": user_text})
                 
+                model_name = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
                 resp = self._groq_client.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
+                    model=model_name,
                     messages=messages,
                     temperature=0.7,
                     max_tokens=250,
