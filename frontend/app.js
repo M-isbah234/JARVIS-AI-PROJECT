@@ -308,7 +308,20 @@ btnScanNet.addEventListener('click', async () => {
 });
 
 // 6. Chat System
+let lastRenderedAssistant = '';
+let lastRenderedTime = 0;
+
 function appendChatMessage(role, text) {
+  if (!text) return;
+  const now = Date.now();
+  if (role === 'assistant') {
+    if (text === lastRenderedAssistant && (now - lastRenderedTime < 3500)) {
+      return; // Ignore duplicate assistant response within 3.5 seconds
+    }
+    lastRenderedAssistant = text;
+    lastRenderedTime = now;
+  }
+
   const msgDiv = document.createElement('div');
   msgDiv.className = `chat-msg ${role}`;
   msgDiv.innerHTML = `
@@ -320,8 +333,17 @@ function appendChatMessage(role, text) {
 }
 
 // Speech Synthesis (Audio Output)
+let lastSpokenText = '';
+let lastSpokenTime = 0;
+
 function speakResponse(text) {
   if (!isVoiceListening || !window.speechSynthesis) return;
+  const now = Date.now();
+  if (text === lastSpokenText && (now - lastSpokenTime < 3500)) {
+    return; // Don't speak identical text twice within 3.5 seconds
+  }
+  lastSpokenText = text;
+  lastSpokenTime = now;
   try {
     window.speechSynthesis.cancel();
     const cleanText = text.replace(/[*#◈_`]/g, '').trim();
@@ -396,8 +418,11 @@ async function sendUserMessage(text) {
       body: JSON.stringify({ message: msg })
     });
     const data = await res.json();
-    appendChatMessage('assistant', data.response);
-    speakResponse(data.response);
+    // Only append if WebSocket is offline (active WS broadcast handles real-time append)
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      appendChatMessage('assistant', data.response);
+      speakResponse(data.response);
+    }
   } catch (err) {
     appendChatMessage('assistant', 'Telemetry connection failure. Operating offline, Sir.');
   }
