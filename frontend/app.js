@@ -509,7 +509,9 @@ btnVoiceToggle.addEventListener('click', async () => {
 });
 
 // ==============================================================================
+// ==============================================================================
 // 8. 3D Neural Web Particle Constellation Engine (Iron Man HUD Voice Reactive)
+// Organic Fluid Undulation, Dynamic Synaptic Pulses, and Multi-Harmonic Waves
 // ==============================================================================
 
 class NeuralWebVisualizer {
@@ -518,7 +520,9 @@ class NeuralWebVisualizer {
     if (!this.canvas) return;
     this.ctx = this.canvas.getContext('2d');
     this.particles = [];
-    this.particleCount = 260; // Denser constellation web
+    this.particleCount = 280; // Dense, intricate neural web
+    this.signals = []; // Active synaptic pulses traveling along filaments
+    this.maxSignals = 45;
     this.isSpeaking = false;
     this.speechCadence = 0;
     this.voiceIntensity = 0;
@@ -549,24 +553,35 @@ class NeuralWebVisualizer {
 
   createParticles() {
     this.particles = [];
+    this.signals = [];
     for (let i = 0; i < this.particleCount; i++) {
       const angle = Math.random() * Math.PI * 2;
-      // Idle anchor radius hugs the HUD concentric rings (140px - 215px)
-      const baseRadius = 140 + Math.random() * 75;
+      // Volumetric radial layering: 0 = near core boundary, 1 = outer undulating boundary
+      // Quadratic spread distributes points smoothly across the depth volume, preventing hollow donut rings
+      const layer = Math.pow(Math.random(), 0.75); 
+      // Base idle anchor radius: hugs safely outside the 88px inner core (115px to 235px)
+      const baseRadius = 115 + layer * 120;
+
       this.particles.push({
         angle: angle,
+        layer: layer, // 0 (inner) to 1 (outer periphery)
         baseRadius: baseRadius,
         currentRadius: baseRadius,
         targetRadius: baseRadius,
-        radialOffset: Math.random(),
-        z: (Math.random() - 0.5) * 160,
-        speed: (Math.random() * 0.0035 + 0.002) * (Math.random() > 0.5 ? 1 : -1),
-        radialOscillation: Math.random() * Math.PI * 2,
-        oscillationSpeed: Math.random() * 0.05 + 0.02,
-        // Smaller, high-tech pinpoint dots
-        size: Math.random() * 0.8 + 0.7, 
+        z: (Math.random() - 0.5) * 260, // Volumetric 3D depth
+        // Angular drift: varied speeds create dynamic, non-rigid rotation
+        angularSpeed: (Math.random() * 0.003 + 0.001) * (Math.random() > 0.45 ? 1 : -1),
+        // Organic undulating harmonic parameters
+        harmonicPhase: Math.random() * Math.PI * 2,
+        harmonicSpeed: Math.random() * 0.04 + 0.02,
+        // Individual breathing oscillation
+        flutterSpeed: Math.random() * 0.06 + 0.03,
+        flutterPhase: Math.random() * Math.PI * 2,
+        // Sharp pinpoint dot geometry
+        size: Math.random() * 0.75 + 0.65,
         pulseOffset: Math.random() * Math.PI * 2,
-        baseAlpha: Math.random() * 0.35 + 0.55
+        baseAlpha: Math.random() * 0.35 + 0.55,
+        energyFlash: 0 // Flash intensity when synaptic pulse arrives
       });
     }
   }
@@ -576,45 +591,80 @@ class NeuralWebVisualizer {
   }
 
   animate() {
-    this.time += 0.035;
+    this.time += 0.032;
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.width, this.height);
 
-    // Multi-harmonic voice cadence wave: fluctuates between 50% (normal) and 70% (fully stretched)
+    // Multi-harmonic voice cadence wave: dynamically fluctuates between normal (50%) and stretched (70%)
     if (this.isSpeaking) {
-      const voiceWave = Math.sin(this.time * 5.8) * 0.42 + 
-                        Math.sin(this.time * 11.5) * 0.36 + 
-                        Math.cos(this.time * 18.2) * 0.22;
-      // 0 = normal speaking baseline, 1 = fully stretched peak
+      const voiceWave = Math.sin(this.time * 5.4) * 0.40 + 
+                        Math.sin(this.time * 11.2) * 0.35 + 
+                        Math.cos(this.time * 17.6) * 0.25;
+      // 0 = normal speaking baseline, 1 = fully stretched vocal peak
       this.voiceIntensity = Math.max(0, Math.min(1, 0.45 + voiceWave * 0.55));
       this.speechCadence += (1.0 - this.speechCadence) * 0.12;
     } else {
       this.voiceIntensity = 0;
-      this.speechCadence += (0 - this.speechCadence) * 0.07;
+      this.speechCadence += (0 - this.speechCadence) * 0.06;
     }
 
-    // 50% page coverage radius (diameter = 50% of viewport min dimension)
+    // Exact Page Coverage Targets
+    // Normal Speaking Coverage: diameter = 50% of viewport min dimension (radius = minDim * 0.25)
     const normalSpeakRadius = this.minDim * 0.25;
-    // 70% page coverage radius (diameter = 70% of viewport min dimension when fully stretched)
+    // Peak Voice Stretch Coverage: diameter = 70% of viewport min dimension (radius = minDim * 0.35)
     const maxStretchRadius = this.minDim * 0.35;
     // Dynamic active speech radius modulated by voice cadence
     const currentVoiceRadius = normalSpeakRadius + (maxStretchRadius - normalSpeakRadius) * this.voiceIntensity;
 
-    const maxConnectDist = this.isSpeaking ? Math.max(85, this.minDim * 0.095) : 58;
+    // Background Electric Cyan Aura (Subtle living plasma breath from video)
+    if (this.speechCadence > 0.02) {
+      const auraR = (normalSpeakRadius + (maxStretchRadius - normalSpeakRadius) * this.voiceIntensity) * 0.92;
+      const auraGrad = ctx.createRadialGradient(this.cx, this.cy, 90, this.cx, this.cy, auraR);
+      auraGrad.addColorStop(0, 'rgba(0, 229, 255, 0)');
+      auraGrad.addColorStop(0.5, `rgba(0, 229, 255, ${0.035 * this.voiceIntensity * this.speechCadence})`);
+      auraGrad.addColorStop(0.85, `rgba(0, 229, 255, ${0.075 * this.voiceIntensity * this.speechCadence})`);
+      auraGrad.addColorStop(1, 'rgba(0, 229, 255, 0)');
+      ctx.fillStyle = auraGrad;
+      ctx.beginPath();
+      ctx.arc(this.cx, this.cy, auraR, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    const maxConnectDist = this.isSpeaking ? Math.max(78, this.minDim * 0.09) : 54;
     const maxConnectDistSq = maxConnectDist * maxConnectDist;
     const renderedNodes = [];
 
-    // 1. Update Particle Positions with 3D Orbital Projection
+    // 1. Update Particle Positions with Organic Undulating Waves & 3D Perspective
     for (let i = 0; i < this.particles.length; i++) {
       const p = this.particles[i];
-      p.angle += p.speed * (1 + this.speechCadence * 1.8);
-      p.radialOscillation += p.oscillationSpeed * (1 + this.speechCadence * 2.2);
 
-      // Interpolate from idle radius to voice radius (50% to 70% page coverage)
-      const particleSpread = (p.radialOffset - 0.5) * (this.minDim * 0.08);
-      const spokeTarget = (p.baseRadius * (1 - this.speechCadence)) + ((currentVoiceRadius + particleSpread) * this.speechCadence);
-      p.targetRadius = spokeTarget + Math.sin(p.radialOscillation) * (this.speechCadence * 20);
-      p.currentRadius += (p.targetRadius - p.currentRadius) * 0.09;
+      // Tangential orbital drift (speeds up slightly with speech)
+      p.angle += p.angularSpeed * (1 + this.speechCadence * 1.6);
+
+      // Multi-harmonic wave ripples along circumference (eliminates rigid circle / straight lines)
+      const wave1 = Math.sin(p.angle * 3 + this.time * 2.2 + p.harmonicPhase) * 0.38;
+      const wave2 = Math.cos(p.angle * 5 - this.time * 2.8) * 0.32;
+      const wave3 = Math.sin(p.angle * 7 + this.time * 3.7) * 0.20;
+      const wave4 = Math.sin(p.angle * 11 - this.time * 5.1) * 0.12;
+      const organicRipple = (wave1 + wave2 + wave3 + wave4) * (this.minDim * 0.055) * p.layer * this.speechCadence;
+
+      // Radial shockwave ripple propagating outward from core to periphery
+      const travelingShockwave = Math.sin(this.time * 7.5 - p.currentRadius * 0.02) * (14 * p.layer * this.speechCadence);
+
+      // Individual organic breathing
+      const idleFlutter = Math.sin(this.time * 2.5 + p.flutterPhase) * (4 + p.layer * 6);
+
+      // Target radius calculation: volumetric interpolation from inner core boundary to outer 50%-70% perimeter
+      const innerCoreMargin = 115;
+      const layerTargetVoice = innerCoreMargin + p.layer * (currentVoiceRadius - innerCoreMargin);
+      const targetR = (p.baseRadius * (1 - this.speechCadence)) + 
+                      (layerTargetVoice * this.speechCadence) + 
+                      organicRipple + 
+                      travelingShockwave + 
+                      idleFlutter;
+
+      // Fluid spring dampening for smooth organic motion
+      p.currentRadius += (targetR - p.currentRadius) * 0.085;
 
       // 3D perspective projection
       const fov = 420;
@@ -622,25 +672,40 @@ class NeuralWebVisualizer {
       const px = this.cx + Math.cos(p.angle) * p.currentRadius * scale;
       const py = this.cy + Math.sin(p.angle) * p.currentRadius * scale;
 
+      // Decay energy flash
+      if (p.energyFlash > 0) p.energyFlash *= 0.88;
+
       const alphaPulse = Math.sin(this.time * 3 + p.pulseOffset) * 0.2;
-      const currentAlpha = Math.min(1, Math.max(0.2, p.baseAlpha + alphaPulse + this.speechCadence * 0.35));
+      const currentAlpha = Math.min(1, Math.max(0.18, p.baseAlpha + alphaPulse + this.speechCadence * 0.35 + p.energyFlash));
 
       renderedNodes.push({
+        id: i,
         x: px,
         y: py,
         z: p.z,
-        size: p.size * scale * (1 + this.speechCadence * 0.3),
+        layer: p.layer,
+        angle: p.angle,
+        size: p.size * scale * (1 + this.speechCadence * 0.25 + p.energyFlash * 0.4),
         alpha: currentAlpha,
+        energyFlash: p.energyFlash,
         connections: 0
       });
     }
 
-    // 2. Render Dense Constellation Lattice Lines
+    // 2. Render Living Synaptic Filaments (Organic Line Network)
+    const activeFilaments = [];
+
     for (let i = 0; i < renderedNodes.length; i++) {
       const n1 = renderedNodes[i];
       for (let j = i + 1; j < renderedNodes.length; j++) {
         const n2 = renderedNodes[j];
-        if (n1.connections > 6 && n2.connections > 6) continue;
+        if (n1.connections > 5 && n2.connections > 5) continue;
+
+        // Prevent rigid chords: reduce connection likelihood between two far-outer perimeter nodes
+        if (n1.layer > 0.82 && n2.layer > 0.82) {
+          const angleDiff = Math.abs(n1.angle - n2.angle);
+          if (angleDiff > 0.35 && angleDiff < Math.PI * 2 - 0.35) continue;
+        }
 
         const dx = n1.x - n2.x;
         const dy = n1.y - n2.y;
@@ -648,32 +713,81 @@ class NeuralWebVisualizer {
 
         if (distSq < maxConnectDistSq) {
           const dist = Math.sqrt(distSq);
-          const lineAlpha = (1 - dist / maxConnectDist) * 0.55 * Math.min(n1.alpha, n2.alpha);
+          // Audio shimmer wave along lines
+          const shimmer = Math.sin(this.time * 4.5 + (n1.angle + n2.angle) * 2) * 0.2;
+          const baseLineAlpha = (1 - dist / maxConnectDist) * (0.50 + shimmer) * Math.min(n1.alpha, n2.alpha);
           
           ctx.beginPath();
           ctx.moveTo(n1.x, n1.y);
           ctx.lineTo(n2.x, n2.y);
           
           if (this.isSpeaking) {
-            ctx.strokeStyle = `rgba(0, 229, 255, ${lineAlpha * 1.25})`;
-            ctx.lineWidth = 0.75;
+            ctx.strokeStyle = `rgba(0, 229, 255, ${Math.min(1, baseLineAlpha * 1.35)})`;
+            ctx.lineWidth = 0.7;
           } else {
-            ctx.strokeStyle = `rgba(77, 216, 255, ${lineAlpha * 0.55})`;
-            ctx.lineWidth = 0.5;
+            ctx.strokeStyle = `rgba(77, 216, 255, ${Math.min(1, baseLineAlpha * 0.65)})`;
+            ctx.lineWidth = 0.45;
           }
           ctx.stroke();
+
           n1.connections++;
           n2.connections++;
+
+          activeFilaments.push({ n1, n2 });
         }
       }
     }
 
-    // 3. Render Crisp, Smaller Glowing Pinpoint Nodes
+    // 3. Synaptic Energy Signal Packets (Darting Electric Sparks)
+    // Spawns and transmits electric pulses along connections to make network feel alive
+    if (activeFilaments.length > 0) {
+      const spawnTarget = this.isSpeaking ? this.maxSignals : 18;
+      if (this.signals.length < spawnTarget && Math.random() < (this.isSpeaking ? 0.45 : 0.15)) {
+        const filament = activeFilaments[Math.floor(Math.random() * activeFilaments.length)];
+        this.signals.push({
+          n1: filament.n1,
+          n2: filament.n2,
+          progress: 0,
+          speed: Math.random() * 0.04 + (this.isSpeaking ? 0.035 : 0.02)
+        });
+      }
+    }
+
+    // Update and render active synaptic signals
+    for (let s = this.signals.length - 1; s >= 0; s--) {
+      const sig = this.signals[s];
+      sig.progress += sig.speed;
+
+      if (sig.progress >= 1.0) {
+        // Flash destination node on arrival
+        const destParticle = this.particles[sig.n2.id];
+        if (destParticle) destParticle.energyFlash = 0.8;
+        this.signals.splice(s, 1);
+        continue;
+      }
+
+      const sx = sig.n1.x + (sig.n2.x - sig.n1.x) * sig.progress;
+      const sy = sig.n1.y + (sig.n2.y - sig.n1.y) * sig.progress;
+
+      // Electric spark aura
+      ctx.fillStyle = 'rgba(0, 229, 255, 0.5)';
+      ctx.beginPath();
+      ctx.arc(sx, sy, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Sharp white signal core
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(sx, sy, 1.4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // 4. Render Crisp Pinpoint Glowing Nodes
     for (let i = 0; i < renderedNodes.length; i++) {
       const n = renderedNodes[i];
       
       // Node Subtle Halo Aura
-      const haloRadius = n.size * 2.8;
+      const haloRadius = n.size * (2.8 + n.energyFlash * 2.0);
       const glowGrad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, haloRadius);
       glowGrad.addColorStop(0, `rgba(0, 229, 255, ${n.alpha * 0.9})`);
       glowGrad.addColorStop(0.5, `rgba(77, 216, 255, ${n.alpha * 0.35})`);
@@ -685,7 +799,7 @@ class NeuralWebVisualizer {
       ctx.fill();
 
       // Node Sharp Center Core (Pinpoint)
-      ctx.fillStyle = this.isSpeaking ? '#ffffff' : '#7fe8ff';
+      ctx.fillStyle = (this.isSpeaking || n.energyFlash > 0.3) ? '#ffffff' : '#7fe8ff';
       ctx.beginPath();
       ctx.arc(n.x, n.y, n.size * 0.75, 0, Math.PI * 2);
       ctx.fill();
