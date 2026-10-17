@@ -7,9 +7,101 @@
   <link rel="stylesheet" href="/static/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+  <!-- STARTING PAGE: Cinematic Deep-Blue Arc Reactor & Neural Web Centerpiece -->
+  <div id="splashScreen" class="splash-screen active">
+    <!-- Deep Vignette & Tech Grid Background -->
+    <div class="splash-vignette"></div>
+    <div class="splash-grid"></div>
+
+    <!-- Centerpiece Container -->
+    <div class="splash-centerpiece-wrapper">
+      <!-- 3D Neural Web Canvas Layer (Constellation) -->
+      <canvas id="neuralWebCanvas" class="neural-web-canvas" width="700" height="700"></canvas>
+
+      <!-- Concentric Holographic HUD Circular Logo (Matches Provided Image) -->
+      <svg class="hud-centerpiece-svg" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <!-- Electric Cyan Filter Glow -->
+          <filter id="cyanGlow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3.5" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <filter id="intenseGlow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="6" result="blur1" />
+            <feGaussianBlur stdDeviation="2" result="blur2" />
+            <feMerge>
+              <feMergeNode in="blur1" />
+              <feMergeNode in="blur2" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
+        <!-- Group: Outer Concentric Elements (Dissolve into Neural Web when Speaking) -->
+        <g class="hud-outer-elements">
+          <!-- Outermost Precision Bracket Track (r=262) -->
+          <circle cx="300" cy="300" r="262" class="hud-ring-outer-dashed" />
+          
+          <!-- Outer Segmented Arc Brackets (r=246) -->
+          <circle cx="300" cy="300" r="246" class="hud-ring-outer-brackets" />
+
+          <!-- Outer Accents & Corner Alignment Markers -->
+          <path d="M 50 300 H 70 M 530 300 H 550 M 300 50 V 70 M 300 530 V 550" class="hud-crosshair" />
+
+          <!-- Mid-Orbit Dashed & Segmented Ring (r=210) -->
+          <circle cx="300" cy="300" r="210" class="hud-ring-mid-dashed" />
+
+          <!-- Secondary Track with Accent Arcs (r=188) -->
+          <circle cx="300" cy="300" r="188" class="hud-ring-mid-solid" />
+
+          <!-- Dotted / Beaded Orbit Track (r=162) - Rotates Counter-Clockwise -->
+          <circle cx="300" cy="300" r="162" class="hud-ring-beaded" />
+
+          <!-- Compass Radial Calibration Ticks (r=138) -->
+          <circle cx="300" cy="300" r="138" class="hud-ring-ticks" />
+
+          <!-- Tachometer Segmented Block Gauge Arc (r=114) -->
+          <circle cx="300" cy="300" r="114" class="hud-ring-segmented" />
+        </g>
+
+        <!-- Group: Innermost Core Ring & Holographic Branding (Always Anchored) -->
+        <g class="hud-innermost-core">
+          <!-- Core Inner Disc Glow Background -->
+          <circle cx="300" cy="300" r="88" class="hud-core-bg" />
+
+          <!-- Core Glowing Cyan Border Ring -->
+          <circle cx="300" cy="300" r="88" class="hud-core-ring" />
+
+          <!-- Core Inner Secondary Fine Track -->
+          <circle cx="300" cy="300" r="76" class="hud-core-inner-track" />
+
+          <!-- Core Typography: J.A.R.V.I.S. in Futuristic Font -->
+          <text x="300" y="296" class="hud-core-title">J.A.R.V.I.S.</text>
+          <text x="300" y="322" class="hud-core-status" id="splashStatusText">NEURAL CORE ONLINE</text>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Bottom Status & Transition Callout -->
+    <div class="splash-footer">
+      <div class="splash-prompt">
+        <span class="prompt-icon">◈</span>
+        <span class="prompt-text">CLICK ANYWHERE TO ENGAGE TACTICAL DECK</span>
+        <span class="prompt-icon">◈</span>
+      </div>
+      <div class="splash-voice-badge">
+        <span class="badge-dot pulse"></span>
+        <span id="splashVoiceStatus">VOICE LISTENERS STANDING BY // CLICK LOGO TO SPEAK</span>
+      </div>
+    </div>
+  </div>
+
   <div class="hud-container">
     <!-- Top HUD Navigation Bar -->
     <header class="hud-header">
@@ -33,6 +125,7 @@
           <span class="mic-icon">🎙</span>
           <span id="voiceBtnText">VOICE: STANDBY</span>
         </button>
+        <button id="btnReturnSplash" class="btn-ghost hud-arc-nav-btn" title="Return to Arc Reactor Centerpiece">⏣ ARC CORE</button>
       </div>
     </header>
 
