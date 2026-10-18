@@ -1095,14 +1095,15 @@ body {
   pointer-events: none;
 }
 
-/* 3. Concentric Dot Rings: Outermost Dashed Micro-Track (Pale Ice-Blue / White #C8F4FF to #E6FFFF) */
+/* 3. Concentric Dot Rings: Outermost Dashed Micro-Track (Pale Ice-Blue / White #C8F4FF to #E6FFFF - Zero Glow) */
 .hud-ring-outer-dashed {
   fill: none;
   stroke: #c8f4ff;
   stroke-width: 1.5;
   stroke-dasharray: 4 12;
   opacity: 0.80;
-  filter: none;
+  filter: none !important;
+  -webkit-filter: none !important;
   transform-origin: 300px 300px;
   animation: rotateClockwise 70s linear infinite;
 }
