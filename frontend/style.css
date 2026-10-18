@@ -979,7 +979,7 @@ body {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: radial-gradient(ellipse at center, #061e38 0%, #031120 40%, #010710 70%, #000205 100%);
+  background: radial-gradient(ellipse at center, #021020 0%, #010912 35%, #000408 65%, #000000 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1016,7 +1016,7 @@ body {
   max-width: 100vw;
   max-height: 100vh;
   mix-blend-mode: screen;
-  filter: contrast(1.1) brightness(0.91);
+  filter: contrast(1.22) brightness(0.82);
   transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s ease, opacity 0.6s ease;
   user-select: none;
   -webkit-user-drag: none;
@@ -1024,7 +1024,7 @@ body {
 
 /* Speaking State on Hero Image (Calm, steady without rapid heartbeat scaling) */
 .splash-screen.speaking .splash-hero-img {
-  filter: contrast(1.1) brightness(1.10) drop-shadow(0 0 25px rgba(0, 229, 255, 0.45));
+  filter: contrast(1.22) brightness(1.02) drop-shadow(0 0 25px rgba(0, 229, 255, 0.45));
 }
 
 /* When Transitioned to Tactical Deck: Arc Reactor Remains in Background */
@@ -1039,14 +1039,14 @@ body {
 
 .splash-screen.hidden .splash-hero-img {
   opacity: 0.60;
-  filter: brightness(0.85) contrast(1.1);
+  filter: brightness(0.76) contrast(1.22);
   transform: scale(0.98);
   transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .splash-screen.hidden .splash-centerpiece-wrapper {
   opacity: 0.22;
-  filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.35));
+  filter: none;
   transform: scale(0.96);
   pointer-events: none;
   transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1080,24 +1080,17 @@ body {
   z-index: 3;
 }
 
-/* Ambient Radial Backlight */
+/* Ambient Radial Backlight (Hidden to eliminate hazy hue over golden circuitry) */
 .centerpiece-ambient-backlight {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(102, 224, 255, 0.14) 0%, rgba(98, 182, 203, 0.06) 45%, transparent 70%);
-  mix-blend-mode: screen;
-  pointer-events: none;
-  z-index: 1;
+  display: none;
 }
 
-/* SVG Concentric HUD Rings */
+/* SVG Concentric HUD Rings (Clean, razor-sharp vector lines with zero light spill) */
 .hud-centerpiece-svg {
   width: 100%;
   height: 100%;
   overflow: visible;
-  filter: drop-shadow(0 0 20px rgba(56, 214, 255, 0.25));
+  filter: none;
   z-index: 5;
   pointer-events: none;
 }
@@ -1109,7 +1102,7 @@ body {
   stroke-width: 1.5;
   stroke-dasharray: 4 12;
   opacity: 0.80;
-  filter: drop-shadow(0 0 4px rgba(200, 244, 255, 0.65));
+  filter: none;
   transform-origin: 300px 300px;
   animation: rotateClockwise 70s linear infinite;
 }
@@ -1120,7 +1113,7 @@ body {
   stroke: #48dcff;
   stroke-width: 4.5;
   stroke-dasharray: 120 30 60 30 140 40;
-  filter: drop-shadow(0 0 8px rgba(56, 214, 255, 0.85)) drop-shadow(0 0 16px rgba(92, 225, 255, 0.45));
+  filter: none;
   transform-origin: 300px 300px;
   animation: rotateCounterClockwise 50s linear infinite;
 }
@@ -1131,6 +1124,7 @@ body {
   stroke: #62b6cb;
   stroke-width: 1.5;
   opacity: 0.60;
+  filter: none;
 }
 
 /* 4. Thin Mid-Rings & Long Inner Arcs (Muted Glacier / Sky Blue #62B6CB to #7FD1E8 at ~60% opacity) */
@@ -1140,7 +1134,7 @@ body {
   stroke-width: 1.5;
   stroke-dasharray: 90 20 40 25;
   opacity: 0.60;
-  filter: drop-shadow(0 0 4px rgba(98, 182, 203, 0.6));
+  filter: none;
   transform-origin: 300px 300px;
   animation: rotateClockwise 40s linear infinite;
 }
@@ -1150,17 +1144,17 @@ body {
   stroke: #62b6cb;
   stroke-width: 1.4;
   opacity: 0.60;
-  filter: drop-shadow(0 0 4px rgba(98, 182, 203, 0.55));
+  filter: none;
 }
 
-/* 3. Concentric Dot Rings (Pale Ice-Blue / White #C8F4FF to #E6FFFF with subtle cyan halo) */
+/* 3. Concentric Dot Rings (Pale Ice-Blue / White #C8F4FF to #E6FFFF) */
 .hud-ring-beaded {
   fill: none;
   stroke: #e6ffff;
   stroke-width: 3.2;
   stroke-dasharray: 1 14;
   stroke-linecap: round;
-  filter: drop-shadow(0 0 4px #c8f4ff) drop-shadow(0 0 8px rgba(102, 224, 255, 0.7));
+  filter: none;
   transform-origin: 300px 300px;
   animation: rotateCounterClockwise 28s linear infinite;
 }
@@ -1172,7 +1166,7 @@ body {
   stroke-width: 1.5;
   stroke-dasharray: 2 8;
   opacity: 0.60;
-  filter: drop-shadow(0 0 4px rgba(98, 182, 203, 0.6));
+  filter: none;
   transform-origin: 300px 300px;
   animation: rotateClockwise 55s linear infinite;
 }
@@ -1185,7 +1179,7 @@ body {
   stroke-dasharray: 5 9;
   stroke-dashoffset: 45;
   opacity: 0.90;
-  filter: drop-shadow(0 0 6px rgba(120, 216, 216, 0.75)) drop-shadow(0 0 12px rgba(154, 234, 234, 0.45));
+  filter: none;
   transform-origin: 300px 300px;
   animation: pulseSegmented 3.5s ease-in-out infinite;
 }
@@ -1204,12 +1198,12 @@ body {
   display: none;
 }
 
-/* 1. Inner Solid Core Ring (Pure White-Hot #FFFFFF with soft #66E0FF outer bloom) */
+/* 1. Inner Solid Core Ring (Pure White-Hot #FFFFFF with crisp vector border) */
 .hud-core-ring {
   fill: none;
   stroke: #ffffff;
   stroke-width: 3.2;
-  filter: drop-shadow(0 0 6px #ffffff) drop-shadow(0 0 14px rgba(102, 224, 255, 0.75));
+  filter: none;
   animation: pulseCoreGlow 3s ease-in-out infinite;
 }
 
@@ -1220,10 +1214,10 @@ body {
   stroke-width: 1.4;
   stroke-dasharray: 4 6;
   opacity: 0.60;
-  filter: drop-shadow(0 0 4px rgba(98, 182, 203, 0.55));
+  filter: none;
 }
 
-/* 1. J.A.R.V.I.S. Text (Pure White #FFFFFF with soft #66E0FF bloom) */
+/* 1. J.A.R.V.I.S. Text (Pure White #FFFFFF with razor-sharp edges) */
 .hud-core-title {
   font-family: 'Orbitron', 'JetBrains Mono', sans-serif;
   font-size: 26px;
@@ -1232,11 +1226,11 @@ body {
   text-anchor: middle;
   dominant-baseline: middle;
   letter-spacing: 5px;
-  filter: drop-shadow(0 0 6px #ffffff) drop-shadow(0 0 16px rgba(102, 224, 255, 0.85));
+  filter: none;
   transition: all 0.3s ease;
 }
 
-/* 1. Core Status (Ice-White #E8FFFF with subtle bloom) */
+/* 1. Core Status (Ice-White #E8FFFF with razor-sharp clarity) */
 .hud-core-status {
   font-family: var(--font-mono);
   font-size: 9px;
@@ -1245,7 +1239,7 @@ body {
   text-anchor: middle;
   dominant-baseline: middle;
   letter-spacing: 2px;
-  filter: drop-shadow(0 0 4px rgba(102, 224, 255, 0.8));
+  filter: none;
 }
 
 /* Dissolve / Speaking State Transition */
@@ -1439,16 +1433,17 @@ body {
 }
 
 @keyframes pulseCoreGlow {
-
   0%,
   100% {
-    filter: drop-shadow(0 0 5px #ffffff) drop-shadow(0 0 14px rgba(102, 224, 255, 0.75));
+    filter: none;
+    opacity: 0.92;
     stroke: #ffffff;
   }
 
   50% {
-    filter: drop-shadow(0 0 8px #ffffff) drop-shadow(0 0 22px rgba(102, 224, 255, 0.95)) drop-shadow(0 0 35px rgba(102, 224, 255, 0.5));
-    stroke: #e8ffff;
+    filter: none;
+    opacity: 1;
+    stroke: #ffffff;
   }
 }
 
