@@ -34,6 +34,7 @@ class JarvisChatbot:
         self.groq_key = os.getenv("GROQ_API_KEY") or os.getenv("GroqAPIKey")
         self.gemini_key = os.getenv("GEMINI_API_KEY") or os.getenv("GeminiAPIKey")
         self._groq_client = None
+        self._gemini_client = None
         self._init_clients()
 
     def _init_clients(self):
@@ -45,6 +46,14 @@ class JarvisChatbot:
                 logger.info("Groq AI client initialized successfully.")
             except Exception as e:
                 logger.warning(f"Groq initialization skipped: {e}")
+
+        if self.gemini_key:
+            try:
+                from google import genai
+                self._gemini_client = genai.Client(api_key=self.gemini_key)
+                logger.info("Google Gemini AI client initialized successfully.")
+            except Exception as e:
+                logger.warning(f"Gemini initialization skipped: {e}")
 
     async def _execute_hardware_intent(self, text: str) -> Dict[str, Any]:
         """
@@ -199,21 +208,40 @@ class JarvisChatbot:
         # If conversational question, route to Groq or Gemini
         ai_reply = None
         if self._groq_client:
+            models_to_try = [
+                os.getenv("GROQ_MODEL", "openai/gpt-oss-120b"),
+                "llama-3.3-70b-versatile",
+                "llama-3.1-8b-instant"
+            ]
+            messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+            messages.extend(self.history[-6:])
+            messages.append({"role": "user", "content": user_text})
+            for model_name in models_to_try:
+                try:
+                    resp = self._groq_client.chat.completions.create(
+                        model=model_name,
+                        messages=messages,
+                        temperature=0.7,
+                        max_tokens=250,
+                    )
+                    ai_reply = resp.choices[0].message.content.strip()
+                    if ai_reply:
+                        break
+                except Exception as e:
+                    logger.warning(f"Groq API call ({model_name}) note: {e}")
+
+        # Fallback to Google Gemini if Groq is unavailable or quota exceeded
+        if not ai_reply and self._gemini_client:
             try:
-                messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-                messages.extend(self.history[-6:])
-                messages.append({"role": "user", "content": user_text})
-                
-                model_name = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
-                resp = self._groq_client.chat.completions.create(
-                    model=model_name,
-                    messages=messages,
-                    temperature=0.7,
-                    max_tokens=250,
+                resp = self._gemini_client.models.generate_content(
+                    model="gemini-2.0-flash",
+                    contents=user_text,
+                    config={"system_instruction": SYSTEM_PROMPT}
                 )
-                ai_reply = resp.choices[0].message.content.strip()
-            except Exception as e:
-                logger.warning(f"Groq API call failed: {e}")
+                if resp and resp.text:
+                    ai_reply = resp.text.strip()
+            except Exception as ge:
+                logger.warning(f"Gemini fallback note: {ge}")
 
         # Fallback to offline rule-based witty responses (Bilingual EN/UR)
         if not ai_reply:

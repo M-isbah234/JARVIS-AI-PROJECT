@@ -1211,4 +1211,5 @@ window.addEventListener('DOMContentLoaded', () => {
   neuralVisualizer = new NeuralWebVisualizer('neuralWebCanvas');
   initSplashTransitions();
   updateLanguageDisplay();
+  setHardwarePanelState(true, false);
 });

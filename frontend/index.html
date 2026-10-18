@@ -129,7 +129,7 @@
     <!-- Main Dual-Column Tactical Layout -->
     <main class="hud-main">
       <!-- Left Dock Option Pill / Button (Say "Hardware Management" or "Lights" or Click) -->
-      <button id="btnToggleHardware" class="hardware-dock-tab" title="Click or say 'Hardware Management' or 'Lights' to open">
+      <button id="btnToggleHardware" class="hardware-dock-tab" style="display: none;" title="Click or say 'Hardware Management' or 'Lights' to open">
         <span class="dock-tab-icon">⚡</span>
         <div class="dock-tab-text-group">
           <span class="dock-tab-title">HARDWARE MANAGEMENT</span>
@@ -139,7 +139,7 @@
       </button>
 
       <!-- LEFT COLUMN: Wireless Hardware Terminal -->
-      <section class="card hardware-card collapsed" id="hardwarePanel">
+      <section class="card hardware-card" id="hardwarePanel">
         <div class="card-header">
           <div class="header-tag"><span class="sq"></span>WIRELESS PLUG &amp; BULB MATRIX</div>
           <div class="header-actions">
