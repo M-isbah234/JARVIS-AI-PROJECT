@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>J.A.R.V.I.S. // Wireless Hardware Matrix & Chatbot</title>
-  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/style.css?v=slate_navy" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -13,9 +13,13 @@
   <!-- STARTING PAGE: Cinematic Deep-Blue Arc Reactor & Neural Web Centerpiece -->
   <!-- STARTING PAGE: J.A.R.V.I.S. Arc Core Centerpiece (Matches User Reference Image Exactly) -->
   <div id="splashScreen" class="splash-screen active">
+    <!-- 3D Holographic JARVIS Neural Network Globe Mount -->
+    <div id="jarvisGlobeMount" class="jarvis-globe-mount"></div>
+
     <!-- Whole-Screen Exact Reference Visual -->
-    <div class="splash-hero-container">
-      <img src="/static/jarvis_arc_core.jpg" class="splash-hero-img" alt="J.A.R.V.I.S. Arc Core" />
+    <div class="splash-hero-container" style="display: none;">
+      <img src="/static/jarvis_arc_core.jpg?v=blend" class="splash-hero-img" alt="J.A.R.V.I.S. Arc Core" style="display: none;" />
+      <canvas id="neuralWebCanvas" class="neural-web-canvas" style="display: none;"></canvas>
     </div>
 
     <!-- Centerpiece Hitbox and Animated Concentric Blue Arc Core Rings -->
@@ -81,15 +85,14 @@
           <circle cx="300" cy="300" r="76" class="hud-core-inner-track" />
 
           <!-- Core Typography: J.A.R.V.I.S. in Futuristic Font -->
-          <text x="300" y="296" class="hud-core-title">J.A.R.V.I.S.</text>
+          <text x="302.5" y="296" class="hud-core-title" textLength="136" lengthAdjust="spacing">J.A.R.V.I.S.</text>
           <text x="300" y="322" class="hud-core-status" id="splashStatusText">NEURAL CORE ONLINE</text>
         </g>
       </svg>
     </div>
 
     <!-- Hidden compatibility hooks for JS functions -->
-    <canvas id="neuralWebCanvas" class="neural-web-canvas" style="display:none"></canvas>
-    <div class="splash-footer" style="display:none">
+        <div class="splash-footer" style="display:none">
       <span id="splashVoiceStatus"></span>
       <button id="splashLangBtn"></button>
     </div>
@@ -263,6 +266,8 @@
     </main>
   </div>
 
+  <script src="/static/three.min.js"></script>
+  <script src="/static/OrbitControls.js"></script>
   <script src="/static/app.js"></script>
 </body>
 </html>

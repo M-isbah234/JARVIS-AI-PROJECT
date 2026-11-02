@@ -19,3 +19,7 @@ __pycache__/
 # IDE
 .vscode/
 .idea/
+
+# Node & temporary build experiments
+node_modules/
+quantum-hero/

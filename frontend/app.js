@@ -598,8 +598,8 @@ function isHardwareOpenCommand(text) {
   if (/\b(turn|switch|power\s*on|power\s*off)\b/i.test(t)) {
     return false;
   }
-  const enRegex = /\b(hardware\s*management|open\s*hardware|show\s*hardware|hardware\s*panel|lights\s*panel|smart\s*lights|lights\s*management|open\s*lights|show\s*lights|hardware\s*kholo|lights\s*kholo|hardware\s*dikhao|lights\s*dikhao)\b/i;
-  const exactRegex = /^(?:hardware|lights|smart\s*plug|smart\s*lights|hardware\s*management)$/i;
+  const enRegex = /\b(telemetry|energy\s*telemetry|open\s*telemetry|show\s*telemetry|hardware\s*management|open\s*hardware|show\s*hardware|hardware\s*panel|lights\s*panel|smart\s*lights|lights\s*management|open\s*lights|show\s*lights|hardware\s*kholo|lights\s*kholo|hardware\s*dikhao|lights\s*dikhao)\b/i;
+  const exactRegex = /^(?:telemetry|hardware|lights|smart\s*plug|smart\s*lights|hardware\s*management)$/i;
   const urduRegex = /[\u0600-\u06FF]/.test(t) && /(ہارڈویئر\s*(?:مینجمنٹ|پینل|کھولو|دکھاؤ)?|لائٹس\s*(?:پینل|کھولو|دکھاؤ)|بجلی\s*پینل)/.test(t);
 
   return enRegex.test(t) || exactRegex.test(t) || urduRegex;
@@ -851,288 +851,410 @@ btnVoiceToggle.addEventListener('click', () => {
 
 // ==============================================================================
 // ==============================================================================
-// 8. 3D Neural Web Particle Constellation Engine (Iron Man HUD Voice Reactive)
-// Organic Fluid Undulation, Dynamic Synaptic Pulses, and Multi-Harmonic Waves
+// 8. 3D J.A.R.V.I.S. Holographic Neural Network Globe (Three.js WebGL Engine)
+// 380 Fibonacci Nodes, 150 Drifting Dust Sparks, Pure & Dark Gold Palette
+// Micro-Flicker Filament Circuits, Pinpoint Photonic Additive Glow, OrbitControls
 // ==============================================================================
 
-class NeuralWebVisualizer {
-  constructor(canvasId) {
-    this.canvas = document.getElementById(canvasId);
-    if (!this.canvas) return;
-    this.ctx = this.canvas.getContext('2d');
-    this.particles = [];
-    this.particleCount = 280; // Dense, intricate neural web
-    this.signals = []; // Active synaptic pulses traveling along filaments
-    this.maxSignals = 45;
-    this.isSpeaking = false;
-    this.speechCadence = 0;
-    this.voiceIntensity = 0;
-    this.time = 0;
+class JarvisNeuralGlobeVisualizer {
+  constructor(mountId) {
+    this.container = document.getElementById(mountId);
+    if (!this.container) return;
+
+    this.scene = null;
+    this.camera = null;
+    this.renderer = null;
+    this.controls = null;
+    this.holoGroup = null;
+
+    this.nodeShaderMaterial = null;
+    this.lineShaderMaterial = null;
+    this.sparkGeo = null;
+    this.sparkVelocities = [];
+    this.sparkCount = 150;
+
+    this.brightness = Number(localStorage.getItem('jarvis_brightness')) || 50;
+    this.contrast = Number(localStorage.getItem('jarvis_contrast')) || 50;
+
     this.animId = null;
+    this.startTime = performance.now();
 
     this.init();
+    // Calibration HUD removed
   }
 
   init() {
-    this.resize();
-    this.createParticles();
-    window.addEventListener('resize', () => {
-      this.resize();
-      this.createParticles();
+    if (typeof THREE === 'undefined') {
+      console.warn('[J.A.R.V.I.S. Globe] Three.js not yet loaded, retrying...');
+      setTimeout(() => this.init(), 100);
+      return;
+    }
+
+    const width = this.container.clientWidth || window.innerWidth;
+    const height = this.container.clientHeight || window.innerHeight;
+
+    this.scene = new THREE.Scene();
+    this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+    this.camera.position.set(0, 0, 11.2);
+
+    this.renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: true, // Transparent canvas: preserves authentic J.A.R.V.I.S. radial gradient background!
+      powerPreference: 'high-performance',
+      stencil: false,
+      depth: true,
     });
+    this.renderer.setSize(width, height);
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    this.renderer.setClearColor(0x000000, 0.0);
+    this.container.appendChild(this.renderer.domElement);
+
+    // Orbit Controls
+    if (typeof THREE.OrbitControls !== 'undefined') {
+      this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+      this.controls.enableDamping = true;
+      this.controls.dampingFactor = 0.05;
+      this.controls.autoRotate = true;
+      this.controls.autoRotateSpeed = 0.4;
+      this.controls.minDistance = 4;
+      this.controls.maxDistance = 40;
+      this.controls.enableZoom = true;
+      this.controls.enablePan = false;
+    }
+
+    this.holoGroup = new THREE.Group();
+    this.scene.add(this.holoGroup);
+
+    // Build the 380-node Spherical Neural Matrix
+    this.buildNeuralMatrix();
+
+    // Build the 150 Drifting Dust Sparks
+    this.buildDustSparks();
+
+    // Apply saved tone mapping
+    this.applyToneMapping();
+
+    // Resize Handler
+    window.addEventListener('resize', () => this.onResize(), { passive: true });
+
+    // Start Loop
     this.animate();
   }
 
-  resize() {
-    if (!this.canvas) return;
-    this.width = this.canvas.width = window.innerWidth;
-    this.height = this.canvas.height = window.innerHeight;
-    this.cx = this.width / 2;
-    this.cy = this.height / 2;
-    this.minDim = Math.min(this.width, this.height);
+  buildNeuralMatrix() {
+    const NODE_COUNT = 380;
+    const nodes = [];
+    const nodePositions = new Float32Array(NODE_COUNT * 3);
+    const nodeBasePositions = new Float32Array(NODE_COUNT * 3);
+    const nodeColors = new Float32Array(NODE_COUNT * 3);
+    const nodeSizes = new Float32Array(NODE_COUNT);
+    const nodePhases = new Float32Array(NODE_COUNT);
+
+    const jarvisPalette = [
+      new THREE.Color('#ffd700'), // Pure gold hub
+      new THREE.Color('#f8bc4c'), // Primary golden yellow
+      new THREE.Color('#e08a1e'), // Rich amber
+      new THREE.Color('#b86b14'), // Dark bronze circuit
+      new THREE.Color('#ffb830'), // Solar flare gold
+      new THREE.Color('#b8860b'), // Dark gold
+    ];
+
+    for (let i = 0; i < NODE_COUNT; i++) {
+      const phi = Math.acos(1 - (2 * (i + 0.5)) / NODE_COUNT);
+      const theta = Math.PI * (1 + 5 ** 0.5) * (i + 0.5);
+
+      let radius = 3.5;
+      if (i % 5 === 0) radius = 2.4 + Math.random() * 0.7;
+      else if (i % 5 === 1) radius = 3.3 + Math.random() * 0.5;
+      else if (i % 5 === 2) radius = 3.8 + Math.random() * 0.5;
+      else radius = 3.5 + Math.random() * 0.8;
+
+      const x = radius * Math.sin(phi) * Math.cos(theta);
+      const y = radius * Math.cos(phi) * 0.95;
+      const z = radius * Math.sin(phi) * Math.sin(theta);
+
+      nodes.push(new THREE.Vector3(x, y, z));
+
+      nodePositions[i * 3] = x;
+      nodePositions[i * 3 + 1] = y;
+      nodePositions[i * 3 + 2] = z;
+
+      nodeBasePositions[i * 3] = x;
+      nodeBasePositions[i * 3 + 1] = y;
+      nodeBasePositions[i * 3 + 2] = z;
+
+      const c = jarvisPalette[Math.floor(Math.random() * jarvisPalette.length)];
+      const isHub = (i % 7 === 0);
+      const boost = isHub ? 1.4 : 1.0;
+
+      nodeColors[i * 3] = c.r * boost;
+      nodeColors[i * 3 + 1] = c.g * boost;
+      nodeColors[i * 3 + 2] = c.b * boost;
+
+      nodeSizes[i] = isHub ? 26.0 : (10.0 + Math.random() * 8.0);
+      nodePhases[i] = Math.random() * Math.PI * 2;
+    }
+
+    const nodeGeometry = new THREE.BufferGeometry();
+    nodeGeometry.setAttribute('position', new THREE.BufferAttribute(nodePositions, 3));
+    nodeGeometry.setAttribute('aBasePos', new THREE.BufferAttribute(nodeBasePositions, 3));
+    nodeGeometry.setAttribute('aColor', new THREE.BufferAttribute(nodeColors, 3));
+    nodeGeometry.setAttribute('aSize', new THREE.BufferAttribute(nodeSizes, 1));
+    nodeGeometry.setAttribute('aPhase', new THREE.BufferAttribute(nodePhases, 1));
+
+    // Connect close neighbors with golden filaments
+    const connectionPositions = [];
+    const connectionColors = [];
+    const maxDist = 2.0;
+
+    for (let i = 0; i < NODE_COUNT; i++) {
+      let count = 0;
+      for (let j = i + 1; j < NODE_COUNT; j++) {
+        const d = nodes[i].distanceTo(nodes[j]);
+        if (d < maxDist && count < 3) {
+          connectionPositions.push(
+            nodes[i].x, nodes[i].y, nodes[i].z,
+            nodes[j].x, nodes[j].y, nodes[j].z
+          );
+          connectionColors.push(
+            nodeColors[i * 3], nodeColors[i * 3 + 1], nodeColors[i * 3 + 2],
+            nodeColors[j * 3], nodeColors[j * 3 + 1], nodeColors[j * 3 + 2]
+          );
+          count++;
+        }
+      }
+    }
+
+    const connectionGeometry = new THREE.BufferGeometry();
+    connectionGeometry.setAttribute(
+      'position',
+      new THREE.Float32BufferAttribute(connectionPositions, 3)
+    );
+    connectionGeometry.setAttribute(
+      'aBasePos',
+      new THREE.Float32BufferAttribute(connectionPositions, 3)
+    );
+    connectionGeometry.setAttribute(
+      'aColor',
+      new THREE.Float32BufferAttribute(connectionColors, 3)
+    );
+
+    // Fast Glowing Node Shaders with Additive Blending
+    this.nodeShaderMaterial = new THREE.ShaderMaterial({
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      uniforms: {
+        uTime: { value: 0 },
+      },
+      vertexShader: `
+        attribute vec3 aBasePos;
+        attribute vec3 aColor;
+        attribute float aSize;
+        attribute float aPhase;
+
+        uniform float uTime;
+
+        varying vec3 vColor;
+        varying float vAlpha;
+
+        void main() {
+          float wave1 = sin(uTime * 0.9 + aBasePos.x * 0.6 + aPhase) * 0.08;
+          float wave2 = cos(uTime * 0.7 + aBasePos.y * 0.6 + aPhase) * 0.08;
+          float wave3 = sin(uTime * 0.8 + aBasePos.z * 0.6) * 0.08;
+
+          vec3 displacedPos = aBasePos + vec3(wave1, wave2, wave3);
+
+          vColor = aColor;
+          vAlpha = 1.0;
+
+          vec4 mvPosition = modelViewMatrix * vec4(displacedPos, 1.0);
+          gl_Position = projectionMatrix * mvPosition;
+
+          gl_PointSize = aSize * (28.0 / -mvPosition.z);
+        }
+      `,
+      fragmentShader: `
+        varying vec3 vColor;
+        varying float vAlpha;
+
+        void main() {
+          vec2 coord = gl_PointCoord - vec2(0.5);
+          float dist = length(coord);
+          if (dist > 0.5) discard;
+
+          float core = smoothstep(0.12, 0.0, dist);
+          float halo = exp(-dist * 6.0) * 0.5;
+
+          vec3 finalColor = mix(vColor * 1.25, vec3(1.0, 0.96, 0.88), core * 0.8);
+          gl_FragColor = vec4(finalColor, (core * 0.6 + halo) * vAlpha);
+        }
+      `
+    });
+
+    const nodesMesh = new THREE.Points(nodeGeometry, this.nodeShaderMaterial);
+    this.holoGroup.add(nodesMesh);
+
+    // Micro-flicker connection filaments
+    this.lineShaderMaterial = new THREE.ShaderMaterial({
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      uniforms: {
+        uTime: { value: 0 },
+      },
+      vertexShader: `
+        attribute vec3 aBasePos;
+        attribute vec3 aColor;
+
+        uniform float uTime;
+
+        varying vec3 vColor;
+        varying float vAlpha;
+
+        void main() {
+          float wave1 = sin(uTime * 0.9 + aBasePos.x * 0.6) * 0.08;
+          float wave2 = cos(uTime * 0.7 + aBasePos.y * 0.6) * 0.08;
+          float wave3 = sin(uTime * 0.8 + aBasePos.z * 0.6) * 0.08;
+
+          vec3 displacedPos = aBasePos + vec3(wave1, wave2, wave3);
+
+          vColor = aColor;
+          vAlpha = 0.26 + 0.24 * sin(uTime * 2.8 + aBasePos.x * 2.5 + aBasePos.y * 3.1);
+
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(displacedPos, 1.0);
+        }
+      `,
+      fragmentShader: `
+        varying vec3 vColor;
+        varying float vAlpha;
+
+        void main() {
+          gl_FragColor = vec4(vColor, vAlpha);
+        }
+      `
+    });
+
+    const connectionsMesh = new THREE.LineSegments(connectionGeometry, this.lineShaderMaterial);
+    this.holoGroup.add(connectionsMesh);
   }
 
-  createParticles() {
-    this.particles = [];
-    this.signals = [];
-    for (let i = 0; i < this.particleCount; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      // Volumetric radial layering: 0 = near core boundary, 1 = outer undulating boundary
-      // Quadratic spread distributes points smoothly across the depth volume, preventing hollow donut rings
-      const layer = Math.pow(Math.random(), 0.75); 
-      // Base idle anchor radius: hugs safely outside the 88px inner core (115px to 235px)
-      const baseRadius = 115 + layer * 120;
+  buildDustSparks() {
+    const sparkPositions = new Float32Array(this.sparkCount * 3);
+    const sparkColors = new Float32Array(this.sparkCount * 3);
+    const sparkSizes = new Float32Array(this.sparkCount);
+    this.sparkVelocities = [];
 
-      this.particles.push({
-        angle: angle,
-        layer: layer, // 0 (inner) to 1 (outer periphery)
-        baseRadius: baseRadius,
-        currentRadius: baseRadius,
-        targetRadius: baseRadius,
-        z: (Math.random() - 0.5) * 260, // Volumetric 3D depth
-        // Angular drift: varied speeds create dynamic, non-rigid rotation
-        angularSpeed: (Math.random() * 0.003 + 0.001) * (Math.random() > 0.45 ? 1 : -1),
-        // Organic undulating harmonic parameters
-        harmonicPhase: Math.random() * Math.PI * 2,
-        harmonicSpeed: Math.random() * 0.04 + 0.02,
-        // Individual breathing oscillation
-        flutterSpeed: Math.random() * 0.06 + 0.03,
-        flutterPhase: Math.random() * Math.PI * 2,
-        // Sharp pinpoint dot geometry
-        size: Math.random() * 0.75 + 0.65,
-        pulseOffset: Math.random() * Math.PI * 2,
-        baseAlpha: Math.random() * 0.35 + 0.55,
-        energyFlash: 0 // Flash intensity when synaptic pulse arrives
+    for (let i = 0; i < this.sparkCount; i++) {
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(Math.random() * 2 - 1);
+      const r = 3.6 + Math.random() * 2.2;
+
+      sparkPositions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+      sparkPositions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+      sparkPositions[i * 3 + 2] = r * Math.cos(phi);
+
+      const c = Math.random() < 0.35
+        ? new THREE.Color('#ffd700')
+        : new THREE.Color('#f8bc4c');
+
+      sparkColors[i * 3] = c.r;
+      sparkColors[i * 3 + 1] = c.g;
+      sparkColors[i * 3 + 2] = c.b;
+
+      sparkSizes[i] = 6.0 + Math.random() * 10.0;
+      this.sparkVelocities.push({
+        speedTheta: (Math.random() - 0.5) * 0.004,
+        speedPhi: (Math.random() - 0.5) * 0.003,
+        r,
+        theta,
+        phi,
       });
+    }
+
+    this.sparkGeo = new THREE.BufferGeometry();
+    this.sparkGeo.setAttribute('position', new THREE.BufferAttribute(sparkPositions, 3));
+    this.sparkGeo.setAttribute('aColor', new THREE.BufferAttribute(sparkColors, 3));
+    this.sparkGeo.setAttribute('aSize', new THREE.BufferAttribute(sparkSizes, 1));
+
+    const sparkMat = new THREE.ShaderMaterial({
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      vertexShader: `
+        attribute vec3 aColor;
+        attribute float aSize;
+        varying vec3 vColor;
+        void main() {
+          vColor = aColor;
+          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+          gl_Position = projectionMatrix * mvPosition;
+          gl_PointSize = aSize * (24.0 / -mvPosition.z);
+        }
+      `,
+      fragmentShader: `
+        varying vec3 vColor;
+        void main() {
+          float dist = length(gl_PointCoord - vec2(0.5));
+          if (dist > 0.5) discard;
+          float alpha = exp(-dist * 6.0);
+          gl_FragColor = vec4(vColor * 1.5, alpha * 0.75);
+        }
+      `
+    });
+
+    const sparkMesh = new THREE.Points(this.sparkGeo, sparkMat);
+    this.holoGroup.add(sparkMesh);
+  }
+
+  applyToneMapping() {
+    if (this.container) {
+      this.container.style.filter = 'none';
     }
   }
 
-  setSpeaking(speaking) {
-    this.isSpeaking = speaking;
+  onResize() {
+    if (!this.container || !this.renderer || !this.camera) return;
+    const w = this.container.clientWidth || window.innerWidth;
+    const h = this.container.clientHeight || window.innerHeight;
+    this.camera.aspect = w / h;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize(w, h);
   }
 
   animate() {
-    this.time += 0.032;
-    const ctx = this.ctx;
-    ctx.clearRect(0, 0, this.width, this.height);
-
-    // Multi-harmonic voice cadence wave: dynamically fluctuates between normal (50%) and stretched (70%)
-    if (this.isSpeaking) {
-      const voiceWave = Math.sin(this.time * 5.4) * 0.40 + 
-                        Math.sin(this.time * 11.2) * 0.35 + 
-                        Math.cos(this.time * 17.6) * 0.25;
-      // 0 = normal speaking baseline, 1 = fully stretched vocal peak
-      this.voiceIntensity = Math.max(0, Math.min(1, 0.45 + voiceWave * 0.55));
-      this.speechCadence += (1.0 - this.speechCadence) * 0.12;
-    } else {
-      this.voiceIntensity = 0;
-      this.speechCadence += (0 - this.speechCadence) * 0.06;
-    }
-
-    // Exact Page Coverage Targets
-    // Normal Speaking Coverage: diameter = 50% of viewport min dimension (radius = minDim * 0.25)
-    const normalSpeakRadius = this.minDim * 0.25;
-    // Peak Voice Stretch Coverage: diameter = 70% of viewport min dimension (radius = minDim * 0.35)
-    const maxStretchRadius = this.minDim * 0.35;
-    // Dynamic active speech radius modulated by voice cadence
-    const currentVoiceRadius = normalSpeakRadius + (maxStretchRadius - normalSpeakRadius) * this.voiceIntensity;
-
-    const maxConnectDist = this.isSpeaking ? Math.max(78, this.minDim * 0.09) : 54;
-    const maxConnectDistSq = maxConnectDist * maxConnectDist;
-    const renderedNodes = [];
-
-    // 1. Update Particle Positions with Organic Undulating Waves & 3D Perspective
-    for (let i = 0; i < this.particles.length; i++) {
-      const p = this.particles[i];
-
-      // Tangential orbital drift (speeds up slightly with speech)
-      p.angle += p.angularSpeed * (1 + this.speechCadence * 1.6);
-
-      // Multi-harmonic wave ripples along circumference (eliminates rigid circle / straight lines)
-      const wave1 = Math.sin(p.angle * 3 + this.time * 2.2 + p.harmonicPhase) * 0.38;
-      const wave2 = Math.cos(p.angle * 5 - this.time * 2.8) * 0.32;
-      const wave3 = Math.sin(p.angle * 7 + this.time * 3.7) * 0.20;
-      const wave4 = Math.sin(p.angle * 11 - this.time * 5.1) * 0.12;
-      const organicRipple = (wave1 + wave2 + wave3 + wave4) * (this.minDim * 0.055) * p.layer * this.speechCadence;
-
-      // Radial shockwave ripple propagating outward from core to periphery
-      const travelingShockwave = Math.sin(this.time * 7.5 - p.currentRadius * 0.02) * (14 * p.layer * this.speechCadence);
-
-      // Individual organic breathing
-      const idleFlutter = Math.sin(this.time * 2.5 + p.flutterPhase) * (4 + p.layer * 6);
-
-      // Target radius calculation: volumetric interpolation from inner core boundary to outer 50%-70% perimeter
-      const innerCoreMargin = 115;
-      const layerTargetVoice = innerCoreMargin + p.layer * (currentVoiceRadius - innerCoreMargin);
-      const targetR = (p.baseRadius * (1 - this.speechCadence)) + 
-                      (layerTargetVoice * this.speechCadence) + 
-                      organicRipple + 
-                      travelingShockwave + 
-                      idleFlutter;
-
-      // Fluid spring dampening for smooth organic motion
-      p.currentRadius += (targetR - p.currentRadius) * 0.085;
-
-      // 3D perspective projection
-      const fov = 420;
-      const scale = fov / (fov + p.z);
-      const px = this.cx + Math.cos(p.angle) * p.currentRadius * scale;
-      const py = this.cy + Math.sin(p.angle) * p.currentRadius * scale;
-
-      // Decay energy flash
-      if (p.energyFlash > 0) p.energyFlash *= 0.88;
-
-      const alphaPulse = Math.sin(this.time * 3 + p.pulseOffset) * 0.2;
-      const currentAlpha = Math.min(1, Math.max(0.18, p.baseAlpha + alphaPulse + this.speechCadence * 0.35 + p.energyFlash));
-
-      renderedNodes.push({
-        id: i,
-        x: px,
-        y: py,
-        z: p.z,
-        layer: p.layer,
-        angle: p.angle,
-        size: p.size * scale * (1 + this.speechCadence * 0.25 + p.energyFlash * 0.4),
-        alpha: currentAlpha,
-        energyFlash: p.energyFlash,
-        connections: 0
-      });
-    }
-
-    // 2. Render Living Synaptic Filaments (Organic Line Network)
-    const activeFilaments = [];
-
-    for (let i = 0; i < renderedNodes.length; i++) {
-      const n1 = renderedNodes[i];
-      for (let j = i + 1; j < renderedNodes.length; j++) {
-        const n2 = renderedNodes[j];
-        if (n1.connections > 5 && n2.connections > 5) continue;
-
-        // Prevent rigid chords: reduce connection likelihood between two far-outer perimeter nodes
-        if (n1.layer > 0.82 && n2.layer > 0.82) {
-          const angleDiff = Math.abs(n1.angle - n2.angle);
-          if (angleDiff > 0.35 && angleDiff < Math.PI * 2 - 0.35) continue;
-        }
-
-        const dx = n1.x - n2.x;
-        const dy = n1.y - n2.y;
-        const distSq = dx * dx + dy * dy;
-
-        if (distSq < maxConnectDistSq) {
-          const dist = Math.sqrt(distSq);
-          // Audio shimmer wave along lines
-          const shimmer = Math.sin(this.time * 4.5 + (n1.angle + n2.angle) * 2) * 0.2;
-          const baseLineAlpha = (1 - dist / maxConnectDist) * (0.50 + shimmer) * Math.min(n1.alpha, n2.alpha);
-          
-          ctx.beginPath();
-          ctx.moveTo(n1.x, n1.y);
-          ctx.lineTo(n2.x, n2.y);
-          
-          if (this.isSpeaking) {
-            ctx.strokeStyle = `rgba(0, 229, 255, ${Math.min(1, baseLineAlpha * 1.35)})`;
-            ctx.lineWidth = 0.7;
-          } else {
-            ctx.strokeStyle = `rgba(77, 216, 255, ${Math.min(1, baseLineAlpha * 0.65)})`;
-            ctx.lineWidth = 0.45;
-          }
-          ctx.stroke();
-
-          n1.connections++;
-          n2.connections++;
-
-          activeFilaments.push({ n1, n2 });
-        }
-      }
-    }
-
-    // 3. Synaptic Energy Signal Packets (Darting Electric Sparks)
-    // Spawns and transmits electric pulses along connections to make network feel alive
-    if (activeFilaments.length > 0) {
-      const spawnTarget = this.isSpeaking ? this.maxSignals : 18;
-      if (this.signals.length < spawnTarget && Math.random() < (this.isSpeaking ? 0.45 : 0.15)) {
-        const filament = activeFilaments[Math.floor(Math.random() * activeFilaments.length)];
-        this.signals.push({
-          n1: filament.n1,
-          n2: filament.n2,
-          progress: 0,
-          speed: Math.random() * 0.04 + (this.isSpeaking ? 0.035 : 0.02)
-        });
-      }
-    }
-
-    // Update and render active synaptic signals
-    for (let s = this.signals.length - 1; s >= 0; s--) {
-      const sig = this.signals[s];
-      sig.progress += sig.speed;
-
-      if (sig.progress >= 1.0) {
-        // Flash destination node on arrival
-        const destParticle = this.particles[sig.n2.id];
-        if (destParticle) destParticle.energyFlash = 0.8;
-        this.signals.splice(s, 1);
-        continue;
-      }
-
-      const sx = sig.n1.x + (sig.n2.x - sig.n1.x) * sig.progress;
-      const sy = sig.n1.y + (sig.n2.y - sig.n1.y) * sig.progress;
-
-      // Electric spark aura
-      ctx.fillStyle = 'rgba(0, 229, 255, 0.5)';
-      ctx.beginPath();
-      ctx.arc(sx, sy, 3.5, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Sharp white signal core
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(sx, sy, 1.4, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // 4. Render Crisp Pinpoint Glowing Nodes
-    for (let i = 0; i < renderedNodes.length; i++) {
-      const n = renderedNodes[i];
-      
-      // Node Subtle Halo Aura
-      const haloRadius = n.size * (2.8 + n.energyFlash * 2.0);
-      const glowGrad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, haloRadius);
-      glowGrad.addColorStop(0, `rgba(0, 229, 255, ${n.alpha * 0.9})`);
-      glowGrad.addColorStop(0.5, `rgba(77, 216, 255, ${n.alpha * 0.35})`);
-      glowGrad.addColorStop(1, 'rgba(0, 229, 255, 0)');
-
-      ctx.fillStyle = glowGrad;
-      ctx.beginPath();
-      ctx.arc(n.x, n.y, haloRadius, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Node Sharp Center Core (Pinpoint)
-      ctx.fillStyle = (this.isSpeaking || n.energyFlash > 0.3) ? '#ffffff' : '#7fe8ff';
-      ctx.beginPath();
-      ctx.arc(n.x, n.y, n.size * 0.75, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
     this.animId = requestAnimationFrame(() => this.animate());
+
+    const elapsedTime = (performance.now() - this.startTime) * 0.001;
+
+    if (this.nodeShaderMaterial) {
+      this.nodeShaderMaterial.uniforms.uTime.value = elapsedTime;
+    }
+    if (this.lineShaderMaterial) {
+      this.lineShaderMaterial.uniforms.uTime.value = elapsedTime;
+    }
+
+    if (this.sparkGeo && this.sparkVelocities) {
+      const posAttr = this.sparkGeo.attributes.position;
+      for (let i = 0; i < this.sparkCount; i++) {
+        const vel = this.sparkVelocities[i];
+        vel.theta += vel.speedTheta;
+        vel.phi += vel.speedPhi;
+
+        posAttr.array[i * 3] = vel.r * Math.sin(vel.phi) * Math.cos(vel.theta);
+        posAttr.array[i * 3 + 1] = vel.r * Math.sin(vel.phi) * Math.sin(vel.theta);
+        posAttr.array[i * 3 + 2] = vel.r * Math.cos(vel.phi);
+      }
+      posAttr.needsUpdate = true;
+    }
+
+    if (this.controls) {
+      this.controls.update();
+    }
+
+    if (this.renderer && this.scene && this.camera) {
+      this.renderer.render(this.scene, this.camera);
+    }
   }
 }
 
@@ -1141,23 +1263,99 @@ function initSplashTransitions() {
   const splashScreen = document.getElementById('splashScreen');
   const btnReturnSplash = document.getElementById('btnReturnSplash');
   const logoWrapper = document.querySelector('.splash-centerpiece-wrapper');
+  const innerCore = document.querySelector('.hud-innermost-core');
   const btnLangToggle = document.getElementById('btnLangToggle');
   const splashLangBtn = document.getElementById('splashLangBtn');
 
-  if (logoWrapper) {
-    logoWrapper.addEventListener('click', (e) => {
-      e.stopPropagation(); // Stay on splash screen to converse with J.A.R.V.I.S.
-      // Engage voice hearing mode: open mic, speak greeting, and await user command
+  // Clicking J.A.R.V.I.S. inner core engages voice hearing
+  const clickTarget = innerCore || logoWrapper;
+  if (clickTarget) {
+    clickTarget.addEventListener('click', (e) => {
+      e.stopPropagation();
       setVoiceListeningState(true, true);
     });
   }
 
-  if (splashScreen) {
-    splashScreen.addEventListener('click', () => {
-      // Clicking outside the logo transitions to the tactical deck
+  // Telemetry Tab Activation Routine (Double-Tap Activated)
+  function activateTelemetryTab() {
+    if (splashScreen && !splashScreen.classList.contains('hidden')) {
       splashScreen.classList.add('hidden');
+    }
+    setHardwarePanelState(true, false);
+    const telemetryBlock = document.querySelector('.telemetry-block') || document.getElementById('hardwarePanel');
+    if (telemetryBlock) {
+      telemetryBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      telemetryBlock.classList.add('telemetry-active-pulse');
+      setTimeout(() => {
+        telemetryBlock.classList.remove('telemetry-active-pulse');
+      }, 1800);
+    }
+  }
+
+  // Double-tap and double-click handling for Telemetry Tab:
+  // Single-clicking or dragging allows free 360-degree orbiting of the 3D globe.
+  // Double-tapping activates the Telemetry tab!
+  let lastTapTime = 0;
+  let lastTapPos = { x: 0, y: 0 };
+
+  function checkDoubleTap(clientX, clientY) {
+    const now = Date.now();
+    const dt = now - lastTapTime;
+    const dist = Math.hypot(clientX - lastTapPos.x, clientY - lastTapPos.y);
+
+    if (dt > 40 && dt < 450 && dist < 40) {
+      lastTapTime = 0;
+      activateTelemetryTab();
+      return true;
+    }
+    lastTapTime = now;
+    lastTapPos = { x: clientX, y: clientY };
+    return false;
+  }
+
+  if (splashScreen) {
+    let mouseDownPos = { x: 0, y: 0, time: 0 };
+
+    splashScreen.addEventListener('mousedown', (e) => {
+      mouseDownPos = { x: e.clientX, y: e.clientY, time: Date.now() };
+    });
+
+    splashScreen.addEventListener('mouseup', (e) => {
+      if (e.target.closest('.hud-innermost-core')) return;
+      const dx = Math.abs(e.clientX - mouseDownPos.x);
+      const dy = Math.abs(e.clientY - mouseDownPos.y);
+      const dt = Date.now() - mouseDownPos.time;
+
+      // Only evaluate if not an OrbitControls drag (stationary click / tap)
+      if (dx < 8 && dy < 8 && dt < 300) {
+        checkDoubleTap(e.clientX, e.clientY);
+      }
+    });
+
+    // Native desktop double-click
+    splashScreen.addEventListener('dblclick', (e) => {
+      if (e.target.closest('.hud-innermost-core')) return;
+      e.preventDefault();
+      activateTelemetryTab();
+    });
+
+    // Touchscreen double-tap
+    splashScreen.addEventListener('touchend', (e) => {
+      if (e.target.closest('.hud-innermost-core')) return;
+      const touch = e.changedTouches ? e.changedTouches[0] : null;
+      if (touch) {
+        checkDoubleTap(touch.clientX, touch.clientY);
+      }
     });
   }
+
+  // Double-clicking on HUD background or window when splash is active
+  window.addEventListener('dblclick', (e) => {
+    if (splashScreen && !splashScreen.classList.contains('hidden')) {
+      if (e.target.closest('.hud-innermost-core')) return;
+      activateTelemetryTab();
+    }
+  });
 
   if (btnReturnSplash && splashScreen) {
     btnReturnSplash.addEventListener('click', (e) => {
@@ -1189,7 +1387,7 @@ function initSplashTransitions() {
   if (btnToggleHardware) {
     btnToggleHardware.addEventListener('click', (e) => {
       e.stopPropagation();
-      setHardwarePanelState(true, false);
+      activateTelemetryTab();
     });
   }
 
@@ -1208,7 +1406,7 @@ window.addEventListener('DOMContentLoaded', () => {
   initWebSocket();
   pollTelemetryFallback();
   setInterval(pollTelemetryFallback, 4000);
-  neuralVisualizer = new NeuralWebVisualizer('neuralWebCanvas');
+  neuralVisualizer = new JarvisNeuralGlobeVisualizer('jarvisGlobeMount');
   initSplashTransitions();
   updateLanguageDisplay();
   setHardwarePanelState(true, false);
